@@ -51,7 +51,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 30px;
             transition: all 0.3s ease;
         }
         
@@ -265,6 +265,7 @@
             text-overflow: ellipsis;
             flex: 1;
             min-width: 0;
+            max-width: 100px;
         }
         
         .file-values {
@@ -440,14 +441,18 @@
             }
         }
 
-        // Generate PDF function
+        // Generate PDF function - Telegram Mini App compatible
         function generatePDF() {
             const element = document.getElementById('pdf-content');
             const opt = {
                 margin: 10,
                 filename: 'submission_status.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
@@ -457,11 +462,44 @@
             downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin btn-icon"></i> প্রস্তুত হচ্ছে...';
             downloadBtn.disabled = true;
             
-            // Generate PDF
-            html2pdf().from(element).set(opt).save().then(() => {
-                downloadBtn.innerHTML = '<i class="fas fa-download btn-icon"></i> ডাউনলোড';
-                downloadBtn.disabled = false;
-            });
+            try {
+                // Generate PDF
+                html2pdf().set(opt).from(element).save().then(() => {
+                    downloadBtn.innerHTML = '<i class="fas fa-download btn-icon"></i> ডাউনলোড';
+                    downloadBtn.disabled = false;
+                }).catch(error => {
+                    console.error('PDF generation error:', error);
+                    // Fallback: Open PDF in new tab
+                    html2pdf().set(opt).from(element).outputPdf('datauristring').then(pdfData => {
+                        const newWindow = window.open();
+                        newWindow.document.write(`
+                            <iframe width="100%" height="100%" src="${pdfData}"></iframe>
+                        `);
+                    }).catch(fallbackError => {
+                        console.error('Fallback also failed:', fallbackError);
+                        alert('PDF ডাউনলোড সাপোর্ট করে না। স্ক্রিনশট নিন।');
+                    }).finally(() => {
+                        downloadBtn.innerHTML = '<i class="fas fa-download btn-icon"></i> ডাউনলোড';
+                        downloadBtn.disabled = false;
+                    });
+                });
+            } catch (error) {
+                console.error('PDF generation failed:', error);
+                // Alternative: Create screenshot download
+                html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'submission_status.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }).finally(() => {
+                    downloadBtn.innerHTML = '<i class="fas fa-download btn-icon"></i> ডাউনলোড';
+                    downloadBtn.disabled = false;
+                });
+            }
         }
 
         // On page load
@@ -513,7 +551,7 @@
                 const description = document.querySelector('.description');
                 description.parentNode.insertBefore(userInfoContainer, description.nextSibling);
                 
-                // ✅ 2. অর্ডার আইডি ডিসপ্লে - Firebase ডকুমেন্ট আইডি
+                // ✅ 2. অর্ডার আইডি ডিসপ্লে - Firebase ডকুমেন্ট আইডি (100px max-width)
                 const timestamp = formData.formData?.timestamp || formData.timestamp;
                 let documentId = timestamp ? await getDocumentIdFromFirebase(timestamp) : null;
                 
