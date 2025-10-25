@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -28,7 +27,7 @@
       --bg: #f8fafc;
       --card: #ffffff;
       --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-      --radius: 16px;
+      --radius: 10px;
       --input-bg: #ffffff;
       --border-color: #e2e8f0;
       --button-bg: #2563eb;
@@ -151,9 +150,41 @@
       margin-bottom: 20px; 
     }
 
-    /* Button - NexaWallet Style */
-    button { 
-      width: 100%; 
+    /* Button Container Style */
+    .button-container {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    /* Back Button Style */
+    .back-button {
+      background-color: var(--text-light) !important;
+      margin-bottom: 0;
+      width: 15%;
+      padding: 12px !important;
+      color: #ffffff; 
+      border: none; 
+      border-radius: var(--radius); 
+      font-size: 1rem; 
+      font-weight: 600;
+      cursor: pointer; 
+      transition: all 0.3s ease; 
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-button:hover {
+      background-color: var(--text) !important;
+      transform: translateY(-2px);
+    }
+
+    /* Submit Button Style */
+    #submit-btn {
+      width: 80%;
+      margin-top: 0;
       padding: 15px; 
       background-color: var(--button-bg); 
       color: #ffffff; 
@@ -163,16 +194,15 @@
       font-weight: 600;
       cursor: pointer; 
       transition: all 0.3s ease; 
-      margin-top: 10px;
       box-shadow: var(--shadow);
     }
 
-    button:hover { 
+    #submit-btn:hover { 
       background-color: var(--button-hover); 
       transform: translateY(-2px);
     }
 
-    button:disabled { 
+    #submit-btn:disabled { 
       background-color: var(--button-disabled); 
       cursor: not-allowed; 
       color: var(--text-light);
@@ -228,56 +258,6 @@
       background: var(--button-hover);
     }
 
-    /* Go Back Button - NexaWallet Style */
-    .styled-wrapper {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      z-index: 10;
-    }
-
-    .styled-wrapper .button {
-      display: block;
-      position: relative;
-      width: 60px;
-      height: 60px;
-      margin: 0;
-      overflow: hidden;
-      outline: none;
-      background-color: var(--card);
-      cursor: pointer;
-      border: 0;
-      border-radius: 50%;
-      box-shadow: var(--shadow);
-      transition: all 0.3s ease;
-    }
-
-    .styled-wrapper .button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-    }
-
-    .styled-wrapper .button-box {
-      display: flex;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-
-    .styled-wrapper .button-elem {
-      display: block;
-      width: 20px;
-      height: 20px;
-      margin: 20px 20px 0 20px;
-      fill: var(--primary);
-    }
-
-    .styled-wrapper .button:hover .button-box,
-    .styled-wrapper .button:focus .button-box {
-      transition: 0.4s;
-      transform: translateX(-56px);
-    }
-
     /* Loading Spinner - NexaWallet Style */
     .loading-spinner {
       display: inline-block;
@@ -314,25 +294,25 @@
 <body>
   <div class="container">
     <div class="form-container fade-in">
-      <h2>Submit your Instagram file.</h2>
+      <h2>Submit instagram file.</h2>
       
       <!-- First Set -->
       <div class="form-group">
         <div class="form-item">
           <label for="account-type">Account Type:</label>
           <select id="account-type" required>
-            <option disabled>--Select-- </option>
-            <option selected>Instagram</option>
+            <option disabled >--Select--</option>
+            <option selected>Instagran</option>
           </select>
         </div>
         <div class="form-item">
           <label for="mail-box">Mail Type:</label>
           <select id="mail-box" required>
-            <option disabled selected>Select</option>
-            <option > Web Mail </option>
+            <option disabled >--Select--</option>
+            <option >Web Mail </option>
             <option>Temp Mail</option>
             <option selected>Any Mail</option>
-            <option > Sort Mail </option>
+            <option >Sort Mail </option>
           </select>
         </div>
       </div>
@@ -352,8 +332,8 @@
           <select id="fd-type">
             <option disabled selected>--Select--</option>
             <option value="0POST">0 POST</option>
-            <option value="AnyDFpost">Any DG POST</option>
             <option value="15POST">15 POST</option>
+            <option value="AnyDGPOST">Any DG POST</option>
           </select>
         </div>
         <div class="form-item">
@@ -380,7 +360,13 @@
         <input type="url" id="google-sheet" placeholder="Paste File Link Here">
       </div>
 
-      <button type="submit" id="submit-btn">Submit</button>
+      <!-- Button Container -->
+      <div class="button-container">
+        <button class="back-button" onclick="goBack()">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <button type="submit" id="submit-btn">Submit</button>
+      </div>
     </div>
   </div>
   
@@ -390,24 +376,6 @@
           <p id="alert-message"></p>
           <button id="alert-ok">OK</button>
       </div>
-  </div>
-
-  <!-- Go Back Button -->
-  <div class="styled-wrapper">
-    <button onclick="goBack()" class="button">
-      <div class="button-box">
-        <span class="button-elem">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-          </svg>
-        </span>
-        <span class="button-elem">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-          </svg>
-        </span>
-      </div>
-    </button>
   </div>
 
   <script>
@@ -589,20 +557,14 @@
           return;
       }
 
-      let chatIdForBot;
-
-      if (cookie2fa === "Cookies") {
-          chatIdForBot = "-1002654345940";
-      } else if (cookie2fa === "2FA" &&  fdType === "30FD") {
-          chatIdForBot = "-1002654345940";
-      } else if (cookie2fa === "2FA" &&  fdType === "0FD") {
-          chatIdForBot = "-1002654345940";
-      } else if (cookie2fa === "2FA" &&  fdType === "10FD") {
-          chatIdForBot = "-1002654345940";
-      } else {
+      // ✅ 1. FIXED: 2FA/কুকি সিলেক্ট সমস্যা
+      if (cookie2fa !== "2FA" && cookie2fa !== "Cookies") {
           showAlert("সঠিকভাবে 2FA বা Cookies সিলেক্ট করুন।");
           return;
       }
+
+      // ✅ 2. FIXED: একটি চ্যানেলে মেসেজ পাঠানো
+      const chatIdForBot = "-1002654345940"; // শুধুমাত্র একটি চ্যানেল
 
       const options = { 
           timeZone: "Asia/Dhaka", 
@@ -677,25 +639,29 @@
           // 3. ইউজারকে মেসেজ পাঠান
           await sendReadyMadeMessageToUser(tgChatId);
           
-          // সিলেকশন অনুযায়ী রিডাইরেক্ট URL নির্ধারণ
-          let redirectPage = "success.html";
+          // ✅ 3. FIXED: শুধুমাত্র একটি সাকসেস পেজ
+          const redirectPage = "success.html";
           
-          if (cookie2fa === "Cookies") {
-              redirectPage = "success/fb-success-cookies.html";
-          } else if (cookie2fa === "2FA" && fdType === "30FD") {
-              redirectPage = "success/fb-success-30fd.html";
-          } else if (cookie2fa === "2FA" && fdType === "0FD") {
-              redirectPage = "success/fb-success-0fd.html";
-          } else if (cookie2fa === "2FA" && fdType === "10FD") {
-              redirectPage = "success/fb-success-10fd.html";
-          }
-
+          // ✅ 4. FIXED: সমস্ত তথ্য সাকসেস পেজে পাঠানো
           const successData = {
+              // ইউজার ইনফো
               profilePicture: window.userData?.photo_url || "",
               userName: (window.userData?.first_name || "") + " " + (window.userData?.last_name || ""),
               userUsername: window.userData?.username ? '@' + window.userData.username : '',
               chatId: window.userData?.id || tgChatId,
-              theme: window.userData?.theme || 'light'
+              theme: window.userData?.theme || 'light',
+              
+              // ফর্ম ডেটা
+              formData: formData,
+              accountType: accountType,
+              mailBox: mailBox,
+              cookie2fa: cookie2fa,
+              fdType: fdType,
+              ttlId: ttlId,
+              tgUsername: tgUsername,
+              tgChatId: tgChatId,
+              googleSheet: googleSheet,
+              submissionTime: currentDate
           };
 
           const encodedData = encodeURIComponent(JSON.stringify(successData));
