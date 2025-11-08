@@ -30,11 +30,6 @@
             --card: #ffffff;
             --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
             --radius: 16px;
-            --input-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --button-bg: #2563eb;
-            --button-hover: #1d4ed8;
-            --button-disabled: #94a3b8;
         }
 
         .dark-mode {
@@ -43,11 +38,6 @@
             --bg: #0f172a;
             --card: #1e293b;
             --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-            --input-bg: #334155;
-            --border-color: #475569;
-            --button-bg: #2563eb;
-            --button-hover: #1d4ed8;
-            --button-disabled: #475569;
         }
 
         body {
@@ -65,27 +55,41 @@
         }
 
         /* Header Styles */
-        .header-section {
-            text-align: center;
-            margin-bottom: 25px;
-            padding: 15px 0;
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            margin-bottom: 20px;
         }
 
-        .welcome-text {
-            font-size: 1.2rem;
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .profile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profile-name {
             font-weight: 600;
-            color: var(--text);
-            margin-bottom: 5px;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .instruction-text {
-            font-size: 0.9rem;
+        .profile-details {
+            font-size: 0.8rem;
             color: var(--text-light);
-        }
-
-        .user-name {
-            color: var(--primary);
-            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Payment Method Page - 3 Column Grid */
@@ -102,7 +106,7 @@
 
         .payment-method-card {
             background: var(--card);
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--bg);
             border-radius: var(--radius);
             padding: 15px 10px;
             text-align: center;
@@ -147,23 +151,15 @@
 
         .payment-input-grid input {
             padding: 12px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--text-light);
             border-radius: var(--radius);
-            background: var(--input-bg);
+            background: var(--bg);
             color: var(--text);
             font-size: 0.9rem;
-            transition: all 0.3s ease;
         }
 
-        .payment-input-grid input:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        /* Add Payment Button - Form Style */
         .add-payment-btn {
-            background: var(--button-bg);
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: var(--radius);
@@ -174,14 +170,6 @@
             justify-content: center;
             gap: 8px;
             font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow);
-        }
-
-        .add-payment-btn:hover {
-            background: var(--button-hover);
-            transform: translateY(-2px);
         }
 
         .saved-payments {
@@ -193,10 +181,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px;
-            background: var(--card);
+            background: var(--bg);
             border-radius: var(--radius);
             margin-bottom: 8px;
-            border: 1px solid var(--border-color);
         }
 
         .saved-payment-info {
@@ -226,82 +213,67 @@
             justify-content: center;
             cursor: pointer;
             font-size: 0.8rem;
-            transition: all 0.3s ease;
         }
 
-        .delete-payment-btn:hover {
-            transform: scale(1.1);
-        }
-
-        /* Buttons Container - Form Style */
+        /* Buttons Container */
         .buttons-container {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
             margin-top: 20px;
         }
 
-        /* Back Button - Form Style */
-        .back-button {
-            background-color: var(--text-light) !important;
+        .back-btn-bottom {
+            background: var(--card);
             width: 50px;
             height: 50px;
-            padding: 12px !important;
-            color: #ffffff; 
-            border: none; 
-            border-radius: var(--radius); 
-            font-size: 1rem; 
-            font-weight: 600;
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            box-shadow: var(--shadow);
+            border-radius: var(--radius);
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .back-button:hover {
-            background-color: var(--text) !important;
-            transform: translateY(-2px);
-        }
-
-        /* Continue Button - Form Style */
-        .continue-btn {
-            flex: 1;
-            padding: 15px; 
-            background-color: var(--button-bg); 
-            color: #ffffff; 
-            border: none; 
-            border-radius: var(--radius); 
-            font-size: 1rem; 
-            font-weight: 600;
-            cursor: pointer; 
-            transition: all 0.3s ease; 
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text);
             box-shadow: var(--shadow);
+            border: none;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 15px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            flex: 1;
         }
 
-        .continue-btn:hover { 
-            background-color: var(--button-hover); 
+        .btn:hover {
             transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
-        .continue-btn:disabled { 
-            background-color: var(--button-disabled); 
-            cursor: not-allowed; 
-            color: var(--text-light);
+        .btn:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
             transform: none;
+            opacity: 0.7;
         }
 
-        .continue-btn.loading {
+        .btn.loading {
             position: relative;
             color: transparent;
         }
 
-        .continue-btn.loading::after {
+        .btn.loading::after {
             content: '';
             position: absolute;
             width: 20px;
@@ -321,11 +293,14 @@
 <body>
     <!-- Page 3: Payment Method - 3 Column Grid -->
     <div class="container payment-method-page" id="paymentPage">
-        <!-- Updated Header Section -->
-        <div class="header-section">
-            <div class="welcome-text">প্রিয় <span class="user-name" id="userFullName">ইদ্রিস আহমেদ</span></div>
-            <div class="instruction-text">আপনার পেমেন্ট মেথডগুলো যুক্ত করুন</div>
-        </div>
+        <header>
+            <div class="user-profile">
+                <div class="profile-info">
+                    <div class="profile-name">Payment Method</div>
+                    <div class="profile-details">Select how to receive money</div>
+                </div>
+            </div>
+        </header>
 
         <!-- 3 Column Grid for Payment Methods -->
         <div class="payment-methods-grid" id="paymentMethodsGrid">
@@ -346,12 +321,12 @@
             </div>
         </div>
 
-        <!-- Updated Buttons Container with Form Style -->
+        <!-- Updated Buttons Container -->
         <div class="buttons-container">
-            <button class="back-button" id="backBtnBottom">
+            <button class="back-btn-bottom" id="backBtnBottom">
                 <i class="fas fa-arrow-left"></i>
             </button>
-            <button class="continue-btn" id="confirmWithdrawBtn" disabled>
+            <button class="btn" id="confirmWithdrawBtn" disabled>
                 <i class="fas fa-paper-plane"></i> Submit & Confirm
             </button>
         </div>
@@ -361,11 +336,6 @@
         // Telegram Web App
         const tg = window.Telegram.WebApp;
         let userData = null;
-        let formData = null;
-
-        // Telegram Bot Configuration - REPLACE WITH YOUR ACTUAL VALUES
-        const BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE';
-        const CHANNEL_ID = '@YOUR_CHANNEL_USERNAME_HERE';
 
         // Payment Methods Configuration with Logos
         const paymentMethods = {
@@ -409,41 +379,8 @@
             initializeApp();
         });
 
-        // Initialize App with Data from URL Parameters
+        // Initialize App with Telegram User Data
         function initializeApp() {
-            // Get data from URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const formDataStr = urlParams.get('formData');
-            
-            if (formDataStr) {
-                try {
-                    formData = JSON.parse(decodeURIComponent(formDataStr));
-                    console.log('Form Data Received:', formData);
-                    
-                    // Apply theme from form data
-                    if (formData.theme === 'dark') {
-                        document.body.classList.add('dark-mode');
-                    } else {
-                        document.body.classList.remove('dark-mode');
-                    }
-                    
-                    // Store in local storage
-                    localStorage.setItem('userFormData', JSON.stringify(formData));
-                    
-                } catch (error) {
-                    console.error('Error parsing form data:', error);
-                }
-            } else {
-                // Try to get from local storage
-                const storedData = localStorage.getItem('userFormData');
-                if (storedData) {
-                    formData = JSON.parse(storedData);
-                    if (formData.theme === 'dark') {
-                        document.body.classList.add('dark-mode');
-                    }
-                }
-            }
-            
             // Telegram WebApp Expansion
             if (tg && tg.expand) {
                 tg.expand();
@@ -460,15 +397,15 @@
                 tgUser = {
                     id: "123456789",
                     username: "test_user",
-                    first_name: "ইদ্রিস",
-                    last_name: "আহমেদ",
+                    first_name: "Test",
+                    last_name: "User",
                     photo_url: "https://via.placeholder.com/150",
                     language_code: "en"
                 };
                 console.log('Demo Mode: Running without Telegram WebApp');
             }
             
-            // Store user data
+            // Store user data internally (not showing in UI)
             userData = {
                 chatId: tgUser.id.toString(),
                 username: tgUser.username || `user_${tgUser.id}`,
@@ -479,19 +416,14 @@
                 isPremium: tgUser.is_premium || false
             };
             
-            // Update user name in header
-            const userFullName = document.getElementById('userFullName');
-            const fullName = `${userData.firstName} ${userData.lastName}`.trim();
-            userFullName.textContent = fullName || 'ইদ্রিস আহমেদ';
-            
-            console.log('User Data Loaded:', userData);
-            console.log('Form Data Loaded:', formData);
+            console.log('User Data Loaded:', {
+                chatId: userData.chatId,
+                username: userData.username,
+                name: `${userData.firstName} ${userData.lastName}`.trim()
+            });
             
             loadPaymentMethods();
             setupEventListeners();
-            
-            // Load any previously saved payments from local storage
-            loadSavedPayments();
         }
 
         // Load Payment Methods in 3 Column Grid
@@ -550,27 +482,13 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Here you can add your back navigation logic
                     window.history.back();
                 }
             });
         }
 
-        // Load saved payments from local storage
-        function loadSavedPayments() {
-            const saved = localStorage.getItem('savedPayments');
-            if (saved) {
-                savedPayments = JSON.parse(saved);
-                renderSavedPayments();
-                document.getElementById('confirmWithdrawBtn').disabled = savedPayments.length === 0;
-            }
-        }
-
-        // Save payments to local storage
-        function savePaymentsToStorage() {
-            localStorage.setItem('savedPayments', JSON.stringify(savedPayments));
-        }
-
-        // Add Payment Method
+        // Payment Methods
         function addPaymentMethod() {
             const number = document.getElementById('paymentNumberInput').value.trim();
 
@@ -600,11 +518,10 @@
                 number: number,
                 logo: paymentMethods[selectedPaymentMethod].logo
             });
-            
             renderSavedPayments();
-            savePaymentsToStorage();
             
             document.getElementById('paymentNumberInput').value = '';
+            
             document.getElementById('confirmWithdrawBtn').disabled = savedPayments.length === 0;
             
             showAlert('Success', 'Payment method added successfully', 'success');
@@ -615,7 +532,7 @@
             container.innerHTML = '';
             
             if (savedPayments.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-light); font-style: italic; padding: 10px; text-align: center;">No payment methods added yet</div>';
+                container.innerHTML = '<div style="color: #666; font-style: italic; padding: 10px; text-align: center;">No payment methods added yet</div>';
                 return;
             }
 
@@ -642,7 +559,6 @@
                     const index = parseInt(this.getAttribute('data-index'));
                     savedPayments.splice(index, 1);
                     renderSavedPayments();
-                    savePaymentsToStorage();
                     document.getElementById('confirmWithdrawBtn').disabled = savedPayments.length === 0;
                     showAlert('Removed', 'Payment method deleted', 'success');
                 });
@@ -666,7 +582,7 @@
             return false;
         }
 
-        // Confirm Withdrawal - DIRECT REDIRECT TO SUCCESS PAGE
+        // Confirm Withdrawal - WITH LOADING STATE
         function confirmWithdrawal() {
             if (savedPayments.length === 0) {
                 showAlert('Required', 'Please add at least one payment method', 'error');
@@ -678,118 +594,22 @@
             confirmBtn.disabled = true;
             confirmBtn.classList.add('loading');
             
-            // Prepare submission data for success page
-            const submissionData = {
-                // User Information
-                userName: `${userData.firstName} ${userData.lastName}`.trim(),
-                chatId: userData.chatId,
-                theme: formData?.theme || 'light',
+            // Simulate processing with user data
+            setTimeout(() => {
+                // Include user data in submission
+                const submissionData = {
+                    user: userData,
+                    paymentMethods: savedPayments,
+                    timestamp: new Date().toISOString()
+                };
                 
-                // Form Data from previous page
-                mailBox: formData?.mailBox || '',
-                cookie2fa: formData?.cookie2fa || '',
-                fdType: formData?.fdType || '',
-                accountType: formData?.accountType || '',
-                submissionTime: formData?.submissionTime || new Date().toLocaleString("en-GB", { 
-                    timeZone: "Asia/Dhaka", 
-                    day: "2-digit", 
-                    month: "2-digit", 
-                    year: "numeric",
-                    hour: "2-digit", 
-                    minute: "2-digit", 
-                    second: "2-digit",
-                    hour12: true 
-                }).replace(",", ""),
+                console.log('Submission Data:', submissionData);
                 
-                // Payment Methods
-                paymentMethods: savedPayments
-            };
-            
-            console.log('Final Submission Data:', submissionData);
-            
-            // Send to Telegram Channel first
-            sendToTelegramChannel(submissionData);
-        }
-
-        // Send data to Telegram Channel
-        function sendToTelegramChannel(data) {
-            // Format the message for Telegram
-            const message = formatTelegramMessage(data);
-            
-            // Telegram Bot API URL
-            const telegramApiUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            
-            // Send message to Telegram channel
-            fetch(telegramApiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    chat_id: CHANNEL_ID,
-                    text: message,
-                    parse_mode: 'HTML'
-                })
-            })
-            .then(response => response.json())
-            .then(result => {
-                console.log('Telegram API Response:', result);
+                showAlert('Success', `Payment methods submitted successfully for user: ${userData.username}`, 'success');
+                confirmBtn.disabled = false;
+                confirmBtn.classList.remove('loading');
                 
-                if (result.ok) {
-                    // Success - redirect to success page
-                    redirectToSuccessPage(data);
-                } else {
-                    throw new Error(result.description || 'Failed to send message');
-                }
-            })
-            .catch(error) {
-                console.error('Error sending to Telegram:', error);
-                // Even if Telegram fails, still redirect to success page
-                redirectToSuccessPage(data);
-            });
-        }
-
-        // Format message for Telegram
-        function formatTelegramMessage(data) {
-            const user = data;
-            const payments = data.paymentMethods;
-            
-            let message = `<b>📋 New Facebook File Submission</b>\n\n`;
-            
-            // User Information
-            message += `<b>👤 User Information:</b>\n`;
-            message += `• Name: ${user.userName}\n`;
-            message += `• ID: <code>${user.chatId}</code>\n`;
-            message += `• Submission Time: ${user.submissionTime}\n\n`;
-            
-            // Form Data
-            message += `<b>📄 Form Details:</b>\n`;
-            message += `• Account Type: ${user.accountType}\n`;
-            message += `• Mail Type: ${user.mailBox}\n`;
-            message += `• 2FA/Cookie: ${user.cookie2fa}\n`;
-            message += `• Friends: ${user.fdType}\n\n`;
-            
-            // Payment Methods
-            message += `<b>💳 Payment Methods:</b>\n`;
-            payments.forEach((payment, index) => {
-                message += `• ${payment.method}: <code>${payment.number}</code>\n`;
-            });
-            
-            message += `\n<b>🕒 System Time:</b> ${new Date().toLocaleString()}`;
-            
-            return message;
-        }
-
-        // Redirect to Success Page
-        function redirectToSuccessPage(data) {
-            // Encode data for success page
-            const encodedData = encodeURIComponent(JSON.stringify(data));
-            
-            // Redirect to success page - REPLACE WITH YOUR SUCCESS PAGE URL
-            const successPageUrl = `https://Fbm212.github.io/UserUI-Submit-Work/instagram
-/success/index.html?data=${encodedData}`;
-            
-            window.location.href = successPageUrl;
+            }, 2000);
         }
 
         // Show Alert with SweetAlert
