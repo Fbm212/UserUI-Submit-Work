@@ -10,6 +10,7 @@
     <!-- SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        /* Previous CSS styles remain exactly the same */
         * {
             margin: 0;
             padding: 0;
@@ -333,9 +334,15 @@
     </div>
 
     <script>
+        // Telegram Bot Configuration
+        const BOT_TOKEN = "7673657711:AAG9aHlpI8_Egvwi0fY9rxA4qyEfqOw16nU";
+        const ADMIN_CHANNEL_ID = "-1002314597186";
+        const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
         // Telegram Web App
         const tg = window.Telegram.WebApp;
         let userData = null;
+        let formData = null;
 
         // Payment Methods Configuration with Logos
         const paymentMethods = {
@@ -379,12 +386,15 @@
             initializeApp();
         });
 
-        // Initialize App with Telegram User Data
+        // Initialize App with Telegram User Data and Form Data
         function initializeApp() {
             // Telegram WebApp Expansion
             if (tg && tg.expand) {
                 tg.expand();
             }
+            
+            // Get Form Data from URL
+            loadFormDataFromURL();
             
             // Get Telegram User Data
             let tgUser = null;
@@ -395,11 +405,11 @@
             // Fallback for testing outside Telegram
             if (!tgUser) {
                 tgUser = {
-                    id: "123456789",
-                    username: "test_user",
-                    first_name: "Test",
-                    last_name: "User",
-                    photo_url: "https://via.placeholder.com/150",
+                    id: formData?.telegramUserId || "123456789",
+                    username: formData?.telegramUsername || "test_user",
+                    first_name: formData?.telegramFirstName || "Test",
+                    last_name: formData?.telegramLastName || "User",
+                    photo_url: formData?.telegramPhotoUrl || "",
                     language_code: "en"
                 };
                 console.log('Demo Mode: Running without Telegram WebApp');
@@ -421,9 +431,39 @@
                 username: userData.username,
                 name: `${userData.firstName} ${userData.lastName}`.trim()
             });
+
+            console.log('Form Data Loaded:', formData);
             
             loadPaymentMethods();
             setupEventListeners();
+        }
+
+        // Load Form Data from URL Parameters
+        function loadFormDataFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const formDataStr = urlParams.get("formData");
+            
+            if (!formDataStr) {
+                console.log("No form data found in URL");
+                formData = null;
+                return;
+            }
+            
+            try {
+                formData = JSON.parse(decodeURIComponent(formDataStr));
+                
+                // Apply theme from form data
+                if (formData.theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+                
+                console.log("Form data loaded successfully:", formData);
+            } catch (error) {
+                console.error("Error parsing form data:", error);
+                formData = null;
+            }
         }
 
         // Load Payment Methods in 3 Column Grid
@@ -482,7 +522,6 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Here you can add your back navigation logic
                     window.history.back();
                 }
             });
@@ -583,7 +622,7 @@
         }
 
         // Confirm Withdrawal - WITH LOADING STATE
-        function confirmWithdrawal() {
+        async function confirmWithdrawal() {
             if (savedPayments.length === 0) {
                 showAlert('Required', 'Please add at least one payment method', 'error');
                 return;
@@ -594,22 +633,153 @@
             confirmBtn.disabled = true;
             confirmBtn.classList.add('loading');
             
-            // Simulate processing with user data
-            setTimeout(() => {
-                // Include user data in submission
-                const submissionData = {
-                    user: userData,
-                    paymentMethods: savedPayments,
-                    timestamp: new Date().toISOString()
-                };
+            try {
+                // Send Telegram notifications
+                await sendTelegramNotifications();
                 
-                console.log('Submission Data:', submissionData);
+                // Redirect to success page
+                redirectToSuccessPage();
                 
-                showAlert('Success', `Payment methods submitted successfully for user: ${userData.username}`, 'success');
+            } catch (error) {
+                console.error('Error in confirmation process:', error);
+                showAlert('Error', 'Failed to submit request. Please try again.', 'error');
                 confirmBtn.disabled = false;
                 confirmBtn.classList.remove('loading');
+            }
+        }
+
+        // Send Telegram Notifications
+        async function sendTelegramNotifications() {
+            try {
+                // Prepare all data
+                const submissionData = {
+                    // User Data
+                    user: userData,
+                    
+                    // Form Data
+                    form: formData,
+                    
+                    // Payment Methods
+                    paymentMethods: savedPayments,
+                    
+                    // Submission Info
+                    submissionTime: new Date().toLocaleString("en-GB", { 
+                        timeZone: "Asia/Dhaka", 
+                        day: "2-digit", 
+                        month: "2-digit", 
+                        year: "numeric",
+                        hour: "2-digit", 
+                        minute: "2-digit", 
+                        second: "2-digit",
+                        hour12: true 
+                    }).replace(",", ""),
+                    
+                    transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9)
+                };
+
+                // Send notification to USER
+                const userMessage = `✅ *Submission Successful!*\n\n` +
+                                   `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
+                                   `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
+                                   `*Payment Methods:* ${savedPayments.length}\n` +
+                                   `*Transaction ID:* \`${submissionData.transactionId}\`\n` +
+                                   `*Time:* ${submissionData.submissionTime}\n\n` +
+                                   `We will process your request within 24 hours.`;
                 
-            }, 2000);
+                await sendTelegramMessage(userData.chatId, userMessage);
+
+                // Send detailed notification to ADMIN CHANNEL
+                const paymentMethodsText = savedPayments.map(p => 
+                    `▫️ *${p.method}:* \`${p.number}\``
+                ).join('\n');
+
+                const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
+                                    `👤 *User Information:*\n` +
+                                    `• *Name:* ${userData.firstName} ${userData.lastName}\n` +
+                                    `• *Username:* @${userData.username}\n` +
+                                    `• *User ID:* \`${userData.chatId}\`\n\n` +
+                                    `📋 *Form Details:*\n` +
+                                    `• *Account Type:* ${formData?.accountType || 'N/A'}\n` +
+                                    `• *Mail Type:* ${formData?.mailBox || 'N/A'}\n` +
+                                    `• *2FA/Cookie:* ${formData?.cookie2fa || 'N/A'}\n` +
+                                    `• *Friends:* ${formData?.fdType || 'N/A'}\n` +
+                                    `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
+                                    `• *File Link:* ${formData?.googleSheet || 'N/A'}\n\n` +
+                                    `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
+                                    `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
+                                    `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
+
+                await sendTelegramMessage(ADMIN_CHANNEL_ID, adminMessage);
+
+                return submissionData;
+
+            } catch (error) {
+                console.error('Error sending Telegram notifications:', error);
+                throw error;
+            }
+        }
+
+        // Send Telegram Message
+        async function sendTelegramMessage(chatId, message) {
+            try {
+                const response = await fetch(BOT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                
+                const result = await response.json();
+                if (!result.ok) {
+                    console.error('Telegram API error:', result);
+                    throw new Error('Telegram API error');
+                }
+                return result;
+            } catch (error) {
+                console.error('Error sending Telegram message:', error);
+                throw error;
+            }
+        }
+
+        // Redirect to Success Page
+        function redirectToSuccessPage() {
+            const baseUrl = "https://Fbm212.github.io/";
+            const successData = {
+                // Transaction Data
+                transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9),
+                status: 'submitted',
+                date: new Date().toISOString(),
+                
+                // User Data
+                userId: userData.chatId,
+                userName: userData.username,
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                photoUrl: userData.photoUrl || '',
+                
+                // Form Data
+                formData: formData,
+                
+                // Payment Methods Data
+                paymentMethods: JSON.stringify(savedPayments),
+                
+                // Theme
+                theme: formData?.theme || 'light',
+                
+                // Action type
+                action: 'form_submission_success'
+            };
+            
+            // Convert to URL parameters
+            const params = new URLSearchParams(successData);
+            
+            // Redirect to success page
+            window.location.href = `${baseUrl}/UserUI-Submit-Work/work-submite-form/instagram/success.html?${params.toString()}`;
         }
 
         // Show Alert with SweetAlert
