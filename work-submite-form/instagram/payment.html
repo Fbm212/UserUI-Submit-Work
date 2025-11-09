@@ -78,10 +78,11 @@
         .profile-name {
             font-weight: 600;
             font-size: 1.1rem;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            margin-bottom: 8px; /* Increased margin for better spacing */
+            white-space: normal; /* Changed to normal for line break */
+            overflow: visible;
+            text-overflow: unset;
+            line-height: 1.4;
         }
 
         .profile-details {
@@ -296,8 +297,11 @@
         <header>
             <div class="user-profile">
                 <div class="profile-info">
-                    <!-- UPDATED: User's full name in header -->
-                    <div class="profile-name" id="userGreeting">প্রিয় User, <br> আপনার পেমেন্ট নিতে এখানে পেমেন্ট মেথডগুলো যুক্ত করুন।</div>
+                    <!-- UPDATED: User's full name in header with line break -->
+                    <div class="profile-name" id="userGreeting">
+                        <div>প্রিয় <span id="userFullName">User</span>,</div>
+                        <div style="font-size: 0.95rem; font-weight: 500; margin-top: 4px;">আপনার পেমেন্ট নিতে এখানে পেমেন্ট মেথডগুলো যুক্ত করুন।</div>
+                    </div>
                     <div class="profile-details">Select payment methods to receive your payment</div>
                 </div>
             </div>
@@ -335,7 +339,7 @@
 
     <script>
         // Telegram Bot Configuration
-        const BOT_TOKEN = "7673657711:AAG9aHlpI8_Egvwi0fY9rxA4qyEfqOw16nU";
+        const BOT_TOKEN = "7673657711:AAG9aHlpI8_Egvwi0fY9rxA4qyEfqOw16n";
         const ADMIN_CHANNEL_ID = "-1002654345940";
         const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
@@ -441,11 +445,11 @@
             setupEventListeners();
         }
 
-        // UPDATED: Update header greeting with user's full name
+        // UPDATED: Update header greeting with user's full name and line break
         function updateUserGreeting() {
             const userFullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User';
-            const greetingElement = document.getElementById('userGreeting');
-            greetingElement.textContent = `প্রিয় ${userFullName}, আপনার পেমেন্ট নিতে এখানে পেমেন্ট মেথডগুলো যুক্ত করুন।`;
+            const userFullNameElement = document.getElementById('userFullName');
+            userFullNameElement.textContent = userFullName;
         }
 
         // Load Form Data from URL Parameters
@@ -658,7 +662,7 @@
             }
         }
 
-        // Send Telegram Notifications
+        // Send Telegram Notifications - UPDATED with better channel handling
         async function sendTelegramNotifications() {
             try {
                 // Prepare all data
@@ -689,7 +693,7 @@
 
                 console.log('Sending Telegram notifications...');
 
-                // 1. Send notification to USER
+                // 1. Send notification to USER (ব্যক্তিগত মেসেজ)
                 const userMessage = `✅ *Submission Successful!*\n\n` +
                                    `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
                                    `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
@@ -699,7 +703,7 @@
                                    `We will process your request within 24 hours.`;
                 
                 const userResult = await sendTelegramMessage(userData.chatId, userMessage);
-                console.log('User message result:', userResult);
+                console.log('User message sent successfully:', userResult);
 
                 // 2. Send detailed notification to ADMIN CHANNEL
                 const paymentMethodsText = savedPayments.map(p => 
@@ -722,49 +726,89 @@
                                     `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
                                     `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
 
-                const adminResult = await sendTelegramMessage(ADMIN_CHANNEL_ID, adminMessage);
-                console.log('Admin message result:', adminResult);
+                // Try different methods for private channel
+                let adminResult;
+                try {
+                    // Method 1: Direct channel message
+                    adminResult = await sendTelegramMessage(ADMIN_CHANNEL_ID, adminMessage);
+                    console.log('Admin channel message sent successfully:', adminResult);
+                } catch (channelError) {
+                    console.log('Channel message failed, trying alternative method...');
+                    
+                    // Method 2: Remove Markdown formatting for private channels
+                    const plainAdminMessage = adminMessage
+                        .replace(/\*/g, '')
+                        .replace(/`/g, '')
+                        .replace(/_/g, '');
+                    
+                    adminResult = await sendTelegramMessage(ADMIN_CHANNEL_ID, plainAdminMessage, false);
+                    console.log('Admin channel message sent (plain text):', adminResult);
+                }
 
                 return submissionData;
 
             } catch (error) {
                 console.error('Error sending Telegram notifications:', error);
-                throw error;
+                
+                // Show specific error message
+                if (error.message.includes('chat not found') || error.message.includes('400')) {
+                    throw new Error('Telegram channel not accessible. Please check bot permissions.');
+                } else if (error.message.includes('403')) {
+                    throw new Error('Bot is not allowed to send messages to this channel.');
+                } else {
+                    throw error;
+                }
             }
         }
 
-        // Send Telegram Message
-        async function sendTelegramMessage(chatId, message) {
+        // Send Telegram Message - UPDATED with better error handling
+        async function sendTelegramMessage(chatId, message, useMarkdown = true) {
             try {
+                const payload = {
+                    chat_id: chatId,
+                    text: message
+                };
+
+                // Add parse_mode only if Markdown is enabled and channel supports it
+                if (useMarkdown) {
+                    payload.parse_mode = 'Markdown';
+                }
+
                 const response = await fetch(BOT_API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        chat_id: chatId,
-                        text: message,
-                        parse_mode: 'Markdown'
-                    })
+                    body: JSON.stringify(payload)
                 });
                 
                 const result = await response.json();
-                console.log('Telegram API response:', result);
+                console.log('Telegram API response for chat', chatId, ':', result);
                 
                 if (!result.ok) {
-                    console.error('Telegram API error:', result);
-                    throw new Error(`Telegram API error: ${result.description}`);
+                    console.error('Telegram API error details:', result);
+                    
+                    // Specific error handling
+                    if (result.error_code === 400) {
+                        throw new Error(`Bad Request: ${result.description}`);
+                    } else if (result.error_code === 403) {
+                        throw new Error(`Forbidden: ${result.description}`);
+                    } else if (result.error_code === 404) {
+                        throw new Error(`Chat not found: ${result.description}`);
+                    } else {
+                        throw new Error(`Telegram API error: ${result.description}`);
+                    }
                 }
                 return result;
             } catch (error) {
-                console.error('Error sending Telegram message:', error);
+                console.error('Error sending Telegram message to chat', chatId, ':', error);
                 throw error;
             }
         }
 
         // Redirect to Success Page
         function redirectToSuccessPage() {
-            const baseUrl = "https://fbm212.github.io";
+            const baseUrl = "https://fbm212.github.io/";
             const successData = {
                 // Transaction Data
                 transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9),
@@ -795,7 +839,7 @@
             const params = new URLSearchParams(successData);
             
             // Redirect to success page
-            window.location.href = `${baseUrl}/work-submite-form/instagram/success.html?${params.toString()}`;
+            window.location.href = `${baseUrl}work-submite-form/instagram/success.html?${params.toString()}`;
         }
 
         // Show Alert with SweetAlert
