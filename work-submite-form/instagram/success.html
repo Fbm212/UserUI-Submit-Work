@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- html2pdf library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
         
@@ -148,17 +151,17 @@
             min-width: 0;
         }
 
-        .user-info-container .info-value {
-            min-width: 0;
-            overflow: hidden;
-        }
+.user-info-container .info-value {
+    min-width: 0;
+    overflow: hidden;
+}
 
-        .user-name, .user-id {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: block;
-        }
+.user-name, .user-id {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
         
         .copy-btn {
             background: transparent;
@@ -361,36 +364,56 @@
     </div>
 
     <script>
-        // ✅ URL থেকে ডেটা পড়ার ফাংশন - UPDATED
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCijpJr4MCsWLVr_am3OAVSmD1lXufNp3A",
+            authDomain: "fbm-market-8f408.firebaseapp.com",
+            databaseURL: "https://fbm-market-8f408-default-rtdb.firebaseio.com",
+            projectId: "fbm-market-8f408",
+            storageBucket: "fbm-market-8f408.firebasestorage.app",
+            messagingSenderId: "588558439157",
+            appId: "1:588558439157:web:8628342d676d89ff9a2bbc"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // URL থেকে ডেটা পড়ার ফাংশন
         function getDataFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
-            
-            // প্রথমে নতুন ফরম্যাট চেক করুন (payment পেজ থেকে)
-            const formDataStr = urlParams.get("formData");
-            if (formDataStr) {
-                try {
-                    const formData = JSON.parse(decodeURIComponent(formDataStr));
-                    console.log("Form data loaded from URL:", formData);
-                    return formData;
-                } catch (error) {
-                    console.error("Error parsing form data:", error);
-                }
-            }
-            
-            // তারপর পুরানো ফরম্যাট চেক করুন
             const dataStr = urlParams.get("data");
-            if (dataStr) {
-                try {
-                    const formData = JSON.parse(decodeURIComponent(dataStr));
-                    console.log("Data loaded from URL:", formData);
-                    return formData;
-                } catch (error) {
-                    console.error("Error parsing data:", error);
-                }
+            
+            if (!dataStr) {
+                console.log("No data found in URL");
+                return null;
             }
             
-            console.log("No data found in URL parameters");
-            return null;
+            try {
+                const formData = JSON.parse(decodeURIComponent(dataStr));
+                return formData;
+            } catch (error) {
+                console.error("Error parsing form data:", error);
+                return null;
+            }
+        }
+
+        // Firebase থেকে ডকুমেন্ট আইডি পাওয়ার ফাংশন
+        async function getDocumentIdFromFirebase(timestamp) {
+            try {
+                const database = firebase.database();
+                const submissionsRef = database.ref('submissions');
+                const snapshot = await submissionsRef.orderByChild('timestamp').equalTo(Number(timestamp)).once('value');
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    // প্রথম ম্যাচিং ডকুমেন্টের কী (আইডি) রিটার্ন করুন
+                    return Object.keys(data)[0];
+                }
+                return null;
+            } catch (error) {
+                console.error("Error fetching document ID from Firebase:", error);
+                return null;
+            }
         }
 
         function copyToClipboard(text) {
@@ -399,27 +422,29 @@
             });
         }
 
-        // ✅ তারিখ ফরম্যাট ফাংশন - FIXED (রেগুলার কারেন্ট টাইম)
-        function formatDateTime() {
-            const now = new Date();
+        // তারিখ ফরম্যাট ফাংশন (ইংরেজিতে, সাল ছাড়া, সেকেন্ড ছাড়া)
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return new Date().toLocaleString('en-US', {
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
             
-            // বাংলাদেশ সময় (UTC+6)
-            const bangladeshTime = new Date(now.getTime() + (6 * 60 * 60 * 1000));
-            
-            const options = {
-                year: 'numeric',
+            return date.toLocaleString('en-US', {
                 month: 'short',
                 day: '2-digit',
                 hour: '2-digit',
                 minute: '2-digit',
-                hour12: true,
-                timeZone: 'Asia/Dhaka'
-            };
-            
-            return bangladeshTime.toLocaleString('en-US', options);
+                hour12: true
+            });
         }
 
-        // ✅ থিম অ্যাপ্লাই করার ফাংশন
+        // থিম অ্যাপ্লাই করার ফাংশন
         function applyTheme(theme) {
             if (theme === 'dark') {
                 document.body.classList.add('dark-mode');
@@ -489,7 +514,7 @@
             }
         }
 
-        // ✅ On page load - UPDATED
+        // On page load
         document.addEventListener('DOMContentLoaded', async function() {
             // URL থেকে ডেটা পড়ুন
             const formData = getDataFromURL();
@@ -497,8 +522,6 @@
             // ✅ থিম অ্যাপ্লাই করুন
             if (formData && formData.theme) {
                 applyTheme(formData.theme);
-            } else if (formData && formData.formData && formData.formData.theme) {
-                applyTheme(formData.formData.theme);
             }
             
             // ✅ 1. অর্ডার আইডি কপি বাটন ইভেন্ট
@@ -506,42 +529,48 @@
             
             if (formData) {
                 // ✅ 1. ইউজার নাম ডিসপ্লে - টেক্সট ওভারফ্লো হিডেন
-                const userName = formData.userName || formData.firstName || formData.formData?.userName || formData.formData?.telegramFirstName || 'N/A';
-                const userId = formData.userId || formData.chatId || formData.formData?.tgChatId || formData.formData?.telegramUserId || 'N/A';
+                const userName = formData.userName || formData.formData?.userName || 'N/A';
+                const userId = formData.chatId || formData.formData?.tgChatId || 'N/A';
                 
                 // ইউজার ইনফো কন্টেইনার তৈরি করুন
-                const userInfoContainer = document.createElement('div');
-                userInfoContainer.className = 'user-info-container';
+const userInfoContainer = document.createElement('div');
+userInfoContainer.className = 'user-info-container';
 
-                // নাম ডিসপ্লে (টেক্সট ওভারফ্লো হিডেন)
-                const nameRow = document.createElement('div');
-                nameRow.className = 'info-row';
-                nameRow.innerHTML = `
-                    <span class="info-label"><i class="fas fa-user"></i> নাম:</span>
-                    <span class="info-value">
-                        <span class="user-name text-ellipsis" title="${userName}">${userName}</span>
-                    </span>
-                `;
+// নাম ডিসপ্লে (টেক্সট ওভারফ্লো হিডেন)
+const nameRow = document.createElement('div');
+nameRow.className = 'info-row';
+nameRow.innerHTML = `
+    <span class="info-label"><i class="fas fa-user"></i> নাম:</span>
+    <span class="info-value">
+        <span class="user-name text-ellipsis" title="${userName}">${userName}</span>
+    </span>
+`;
 
-                // আইডি ডিসপ্লে (টেক্সট ওভারফ্লো হিডেন)
-                const idRow = document.createElement('div');
-                idRow.className = 'info-row';
-                idRow.innerHTML = `
-                    <span class="info-label"><i class="fas fa-id-card"></i> আইডি:</span>
-                    <span class="info-value">
-                        <span class="user-id text-ellipsis" title="${userId}">${userId}</span>
-                    </span>
-                `;
+// আইডি ডিসপ্লে (টেক্সট ওভারফ্লো হিডেন)
+const idRow = document.createElement('div');
+idRow.className = 'info-row';
+idRow.innerHTML = `
+    <span class="info-label"><i class="fas fa-id-card"></i> আইডি:</span>
+    <span class="info-value">
+        <span class="user-id text-ellipsis" title="${userId}">${userId}</span>
+    </span>
+`;
 
-                userInfoContainer.appendChild(nameRow);
-                userInfoContainer.appendChild(idRow);
+userInfoContainer.appendChild(nameRow);
+userInfoContainer.appendChild(idRow);
                 
                 // ইউজার ইনফো কন্টেইনারটি ডিসক্রিপশনের পরে ইনসার্ট করুন
                 const description = document.querySelector('.description');
                 description.parentNode.insertBefore(userInfoContainer, description.nextSibling);
                 
-                // ✅ 2. অর্ডার আইডি ডিসপ্লে - ইউনিক আইডি
-                const documentId = 'TX' + Date.now() + Math.random().toString(36).substr(2, 6).toUpperCase();
+                // ✅ 2. অর্ডার আইডি ডিসপ্লে - Firebase ডকুমেন্ট আইডি (100px max-width)
+                const timestamp = formData.formData?.timestamp || formData.timestamp;
+                let documentId = timestamp ? await getDocumentIdFromFirebase(timestamp) : null;
+                
+                if (!documentId) {
+                    // যদি ডকুমেন্ট আইডি না পাওয়া যায়, তাহলে টাইমস্ট্যাম্প ব্যবহার করুন
+                    documentId = timestamp || Date.now().toString();
+                }
                 
                 const orderIdText = document.getElementById('orderIdText');
                 orderIdText.textContent = documentId;
@@ -560,11 +589,12 @@
                     }, 1000);
                 };
                 
-                // ✅ 3. তারিখ ও সময় ডিসপ্লে - FIXED (রেগুলার কারেন্ট টাইম)
-                const currentTime = formatDateTime();
-                document.getElementById('submissionTime').textContent = currentTime;
+                // ✅ 3. তারিখ ও সময় ডিসপ্লে - ইংরেজিতে, সাল ছাড়া, সেকেন্ড ছাড়া
+                const submissionTime = formData.submissionTime || formData.formData?.submissionTime;
+                const formattedTime = formatDateTime(submissionTime);
+                document.getElementById('submissionTime').textContent = formattedTime;
                 
-                // ✅ 4. ফাইল টাইপ ডিসপ্লে - নতুন ডেটা স্ট্রাকচার অনুযায়ী
+                // ✅ 4. ফাইল টাইপ ডিসপ্লে - হাইফেন সেপারেটেড, ২ লাইনে সীমাবদ্ধ
                 const mailBox = formData.mailBox || formData.formData?.mailBox || 'N/A';
                 const cookie2fa = formData.cookie2fa || formData.formData?.cookie2fa || 'N/A';
                 const fdType = formData.fdType || formData.formData?.fdType || 'N/A';
@@ -572,6 +602,7 @@
                 
                 const fileInfoElement = document.getElementById('fileInfo');
                 fileInfoElement.innerHTML = `
+
                     <div class="file-values">
                         <span class="file-value">${accountType} -</span>
                         <span class="file-value">${cookie2fa}-</span>
@@ -582,7 +613,7 @@
                 
             } else {
                 // যদি URL-এ ডেটা না থাকে, তাহলে ডিফল্ট ভ্যালু সেট করুন
-                const documentId = 'TX' + Date.now() + Math.random().toString(36).substr(2, 6).toUpperCase();
+                const documentId = Date.now().toString();
                 const orderIdText = document.getElementById('orderIdText');
                 orderIdText.textContent = documentId;
                 orderIdText.title = documentId;
@@ -599,8 +630,7 @@
                     }, 1000);
                 };
                 
-                // ✅ তারিখ ও সময় - FIXED (রেগুলার কারেন্ট টাইম)
-                document.getElementById('submissionTime').textContent = formatDateTime();
+                document.getElementById('submissionTime').textContent = formatDateTime(new Date());
                 
                 const fileInfoElement = document.getElementById('fileInfo');
                 fileInfoElement.innerHTML = `
