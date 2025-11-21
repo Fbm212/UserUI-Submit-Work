@@ -1053,7 +1053,7 @@
                     redirectToSuccessPage();
                 } else {
                     // If admin message fails, show custom alert and don't send to user
-                    throw new Error('এখন ফাইল জমা দেওয়ার সময় না।');
+                    throw new Error('এখন ফাইল জমা দেওয়ার এর সময় না।');
                 }
                 
             } catch (error) {
@@ -1074,7 +1074,7 @@
                         {
                             text: 'সাপোর্টে যোগাযোগ',
                             class: 'custom-alert-btn-secondary',
-                            onclick: 'this.closest(\'.custom-alert-overlay\').remove(); window.open(\'https://t.me/mdbyoc', \'_blank\');'
+                            onclick: 'this.closest(\'.custom-alert-overlay\').remove(); window.open(\'https://t.me/mdbyoc\', \'_blank\');'
                         }
                     ]
                 );
