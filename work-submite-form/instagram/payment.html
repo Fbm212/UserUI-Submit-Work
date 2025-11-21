@@ -1223,7 +1223,7 @@
         }
 
         // Redirect to Success Page
-       // Redirect to Success Page - COMPLETELY UPDATED
+       // Redirect to Success Page - COMPLETELY UPDATED WITH USER PROFILE
 function redirectToSuccessPage() {
     const baseUrl = "https://fbm212.github.io";
     
@@ -1239,16 +1239,26 @@ function redirectToSuccessPage() {
         hour12: true 
     }).replace(",", "");
 
+    // Prepare user full name
+    const userFullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username;
+
     // Prepare data in the exact format that success page expects
     const successData = {
-        // Flat structure parameters
-        transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9),
-        status: 'submitted', 
-        date: new Date().toISOString(),
+        // User Profile Information - FOR SUCCESS PAGE USER INFO SECTION
         userId: userData.chatId,
         userName: userData.username,
         firstName: userData.firstName,
         lastName: userData.lastName,
+        userFullName: userFullName,
+        chatId: userData.chatId, // Alternative name for userId
+        tgChatId: userData.chatId, // Another alternative name
+        
+        // Transaction Information
+        transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9),
+        status: 'submitted', 
+        date: new Date().toISOString(),
+        
+        // Theme and Action
         theme: formData?.theme || 'light',
         action: 'form_submission_success',
         
@@ -1274,7 +1284,8 @@ function redirectToSuccessPage() {
             tgChatId: userData.chatId,
             userName: userData.username,
             firstName: userData.firstName,
-            lastName: userData.lastName
+            lastName: userData.lastName,
+            userFullName: userFullName
         }),
         
         // Include payment methods as JSON string
@@ -1290,7 +1301,15 @@ function redirectToSuccessPage() {
         }
     });
     
-    console.log('Redirecting to success page with data:', successData);
+    console.log('Redirecting to success page with data:', {
+        userProfile: {
+            name: userFullName,
+            userId: userData.chatId,
+            username: userData.username
+        },
+        formData: formData
+    });
+    
     window.location.href = `${baseUrl}/UserUI-Submit-Work/work-submite-form/instagram/success.html?${params.toString()}`;
 }
         // Show Alert with SweetAlert
