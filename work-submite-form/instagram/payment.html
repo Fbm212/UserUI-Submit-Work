@@ -715,32 +715,32 @@
         }
 
         // Load Form Data from URL Parameters
-        function loadFormDataFromURL() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const formDataStr = urlParams.get("formData");
-            
-            if (!formDataStr) {
-                console.log("No form data found in URL");
-                formData = null;
-                return;
-            }
-            
-            try {
-                formData = JSON.parse(decodeURIComponent(formDataStr));
-                
-                // Apply theme from form data
-                if (formData.theme === 'dark') {
-                    document.body.classList.add('dark-mode');
-                } else {
-                    document.body.classList.remove('dark-mode');
-                }
-                
-                console.log("Form data loaded successfully:", formData);
-            } catch (error) {
-                console.error("Error parsing form data:", error);
-                formData = null;
-            }
+       function loadFormDataFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const formDataStr = urlParams.get("formData");
+    
+    if (!formDataStr) {
+        console.log("No form data found in URL");
+        formData = null;
+        return;
+    }
+    
+    try {
+        formData = JSON.parse(decodeURIComponent(formDataStr));
+        console.log("Form data loaded successfully:", formData);
+        
+        // থিম অ্যাপ্লাই করুন
+        if (formData.theme === 'dark') {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
         }
+        
+    } catch (error) {
+        console.error("Error parsing form data:", error);
+        formData = null;
+    }
+}
 
         // Load Payment Methods in 3 Column Grid
         function loadPaymentMethods() {
@@ -1223,91 +1223,38 @@
         }
 
         // Redirect to Success Page
-       // Redirect to Success Page - COMPLETELY UPDATED WITH USER PROFILE
-function redirectToSuccessPage() {
+      function redirectToSuccessPage() {
     const baseUrl = "https://fbm212.github.io";
     
-    // Get current time for submission
-    const submissionTime = new Date().toLocaleString("en-GB", { 
-        timeZone: "Asia/Dhaka",
-        day: "2-digit",
-        month: "2-digit", 
-        year: "numeric",
-        hour: "2-digit", 
-        minute: "2-digit", 
-        second: "2-digit",
-        hour12: true 
-    }).replace(",", "");
-
-    // Prepare user full name
-    const userFullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username;
-
-    // Prepare data in the exact format that success page expects
+    // সমস্ত ডেটা প্রস্তুত করুন
     const successData = {
-        // User Profile Information - FOR SUCCESS PAGE USER INFO SECTION
-        userId: userData.chatId,
-        userName: userData.username,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        userFullName: userFullName,
-        chatId: userData.chatId, // Alternative name for userId
-        tgChatId: userData.chatId, // Another alternative name
+        // ইউজার প্রোফাইল
+        userId: formData.telegramUserId,
+        userName: formData.telegramUsername,
+        firstName: formData.telegramFirstName,
+        lastName: formData.telegramLastName,
+        userFullName: `${formData.telegramFirstName} ${formData.telegramLastName}`.trim(),
         
-        // Transaction Information
-        transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9),
-        status: 'submitted', 
+        // ফর্ম ডেটা
+        accountType: formData.accountType,
+        mailBox: formData.mailBox,
+        cookie2fa: formData.cookie2fa,
+        fdType: formData.fdType,
+        ttlId: formData.ttlId,
+        googleSheet: formData.googleSheet,
+        submissionTime: formData.submissionTime,
+        
+        // ট্রানজেকশন ইনফো
+        transactionId: 'TX' + Date.now(),
+        status: 'submitted',
         date: new Date().toISOString(),
-        
-        // Theme and Action
-        theme: formData?.theme || 'light',
-        action: 'form_submission_success',
-        
-        // All the form data that success page needs for file info section
-        accountType: formData?.accountType || 'N/A',
-        mailBox: formData?.mailBox || 'N/A',
-        cookie2fa: formData?.cookie2fa || 'N/A',
-        fdType: formData?.fdType || 'N/A',
-        ttlId: formData?.ttlId || 'N/A',
-        googleSheet: formData?.googleSheet || 'N/A',
-        submissionTime: submissionTime,
-        
-        // Also include the complete nested formData as JSON string for backward compatibility
-        formData: JSON.stringify({
-            timestamp: Date.now().toString(),
-            submissionTime: submissionTime,
-            accountType: formData?.accountType || 'N/A',
-            mailBox: formData?.mailBox || 'N/A', 
-            cookie2fa: formData?.cookie2fa || 'N/A',
-            fdType: formData?.fdType || 'N/A',
-            ttlId: formData?.ttlId || 'N/A',
-            googleSheet: formData?.googleSheet || 'N/A',
-            tgChatId: userData.chatId,
-            userName: userData.username,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            userFullName: userFullName
-        }),
-        
-        // Include payment methods as JSON string
-        paymentMethods: JSON.stringify(savedPayments)
+        theme: formData.theme,
+        action: 'form_submission_success'
     };
     
     const params = new URLSearchParams();
-    
-    // Add all parameters (both flat and nested)
     Object.keys(successData).forEach(key => {
-        if (successData[key] !== null && successData[key] !== undefined) {
-            params.append(key, successData[key]);
-        }
-    });
-    
-    console.log('Redirecting to success page with data:', {
-        userProfile: {
-            name: userFullName,
-            userId: userData.chatId,
-            username: userData.username
-        },
-        formData: formData
+        params.append(key, successData[key]);
     });
     
     window.location.href = `${baseUrl}/UserUI-Submit-Work/work-submite-form/instagram/success.html?${params.toString()}`;
