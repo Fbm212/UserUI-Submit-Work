@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Method Selection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Bengali -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Hind Siliguri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #8b5cf6;
+            --accent: #06d6a0;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            --radius: 16px;
+        }
+
+        .dark-mode {
+            --text: #f1f5f9;
+            --text-light: #94a3b8;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 8px;
+            min-height: 100vh;
+        }
+
+        /* Updated Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            margin-bottom: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .profile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profile-name {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+            line-height: 1.5;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding: 15px;
+            border: 2px solid var(--primary);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-name::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .profile-name:hover::before {
+            left: 100%;
+        }
+
+        .profile-details {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Payment Method Page - 3 Column Grid */
+        .payment-method-page {
+            display: block;
+        }
+
+        .payment-methods-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .payment-method-card {
+            background: var(--card);
+            border: 2px solid var(--bg);
+            border-radius: var(--radius);
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-height: 100px;
+            justify-content: center;
+        }
+
+        .payment-method-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .payment-method-card:active {
+            transform: translateY(0);
+        }
+
+        .payment-method-card.selected {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .payment-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .payment-method-name {
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        /* Payment Input Section - 2 Column Grid */
+        .payment-input-section {
+            margin: 20px 0;
+        }
+
+        .payment-input-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .payment-input-grid input {
+            padding: 12px;
+            border: 1px solid var(--text-light);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .payment-input-grid input.valid {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(6, 214, 160, 0.1);
+        }
+
+        .payment-input-grid input.invalid {
+            border-color: var(--error);
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+        }
+
+        .add-payment-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .add-payment-btn:active {
+            transform: scale(0.98);
+        }
+
+        .saved-payments {
+            margin-top: 15px;
+        }
+
+        .saved-payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .saved-payment-item:hover {
+            transform: translateX(5px);
+        }
+
+        .saved-payment-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .saved-payment-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .delete-payment-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .delete-payment-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Buttons Container */
+        .buttons-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .back-btn-bottom {
+            background: var(--card);
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            border: none;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn-bottom:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 15px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Skeleton Loading */
+        .skeleton-loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        .dark-mode .skeleton-loading {
+            background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+            background-size: 200% 100%;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Responsive Design - Ensuring desktop-like layout on all devices */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+                padding: 15px;
+            }
+            
+            .payment-methods-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            
+            .payment-input-grid {
+                grid-template-columns: 2fr 1fr;
+            }
+            
+            .payment-method-card {
+                min-height: 90px;
+                padding: 12px 8px;
+            }
+            
+            .profile-name {
+                font-size: 1.2rem;
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .payment-methods-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            
+            .payment-method-card {
+                min-height: 85px;
+                padding: 10px 5px;
+            }
+            
+            .payment-method-name {
+                font-size: 0.75rem;
+            }
+            
+            .profile-name {
+                font-size: 1.1rem;
+                padding: 10px;
+            }
+            
+            .buttons-container {
+                flex-direction: row;
+            }
+            
+            .back-btn-bottom {
+                order: 0;
+                margin-top: 0;
+                align-self: auto;
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        /* Ensure desktop layout on all mobile devices */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            
+            .payment-methods-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .payment-input-grid {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page 3: Payment Method - 3 Column Grid -->
+    <div class="container payment-method-page" id="paymentPage">
+        <header>
+            <div class="user-profile">
+                <div class="profile-info">
+                    <div class="profile-name" id="userGreeting">
+                        <div>প্রিয় <span id="userFullName">User</span>,</div>
+                        <div style="font-size: 0.95rem; font-weight: 500; margin-top: 4px;">আপনার পেমেন্ট নিতে এখানে পেমেন্ট মেথডগুলো যুক্ত করুন।</div>
+                    </div>
+                    <div class="profile-details">Select payment methods to receive your payment</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Progress Steps REMOVED as requested -->
+
+        <!-- 3 Column Grid for Payment Methods -->
+        <div class="payment-methods-grid" id="paymentMethodsGrid">
+            <!-- Payment methods will be loaded here -->
+        </div>
+
+        <!-- 2 Column Grid for Input -->
+        <div class="payment-input-section">
+            <div class="payment-input-grid">
+                <input type="text" id="paymentNumberInput" placeholder="Enter payment number">
+                <button class="add-payment-btn" id="addPaymentBtn">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+            
+            <div class="saved-payments" id="savedPayments">
+                <!-- Saved payment methods will appear here -->
+            </div>
+        </div>
+
+        <!-- Updated Buttons Container -->
+        <div class="buttons-container">
+            <button class="back-btn-bottom" id="backBtnBottom">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <button class="btn" id="confirmWithdrawBtn" disabled>
+                <i class="fas fa-paper-plane"></i> Submit & Confirm
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Telegram Bot Configuration
+        const BOT_TOKEN = "7673657711:AAG9aHlpI8_Egvwi0fY9rxA4qyEfqOw16nU";
+        const ADMIN_CHANNEL_ID = "-1002314597186";
+        const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+        // Telegram Web App
+        const tg = window.Telegram.WebApp;
+        let userData = null;
+        let formData = null;
+
+        // Payment Methods Configuration with Logos
+        const paymentMethods = {
+            Bkash: { 
+                pattern: "^01[3-9][0-9]{8}$", 
+                placeholder: "01XXXXXXXXX", 
+                label: "Bkash Number",
+                logo: "https://i.ibb.co/jPr3zzT5/bKash.png"
+            },
+            Nagad: { 
+                pattern: "^01[3-9][0-9]{8}$", 
+                placeholder: "01XXXXXXXXX", 
+                label: "Nagad Number",
+                logo: "https://i.ibb.co/ZzfbKbrz/nagad.png"
+            },
+            Rocket: { 
+                pattern: "^01[3-9][0-9]{8}$", 
+                placeholder: "01XXXXXXXXX", 
+                label: "Rocket Number",
+                logo: "https://i.ibb.co/0pGsRX5m/rocket.png"
+            },
+            Binance: { 
+                pattern: "^\\d{6,11}$", 
+                placeholder: "ID1042457700", 
+                label: "Binance ID",
+                logo: "https://i.ibb.co/FbzYZPst/binance.png"
+            },
+            Payeer: { 
+                pattern: "^P\\d{7,10}$", 
+                placeholder: "P1127766562", 
+                label: "Payeer ID",
+                logo: "https://i.ibb.co/38hcZcS/payeer.png"
+            }
+        };
+
+        let savedPayments = [];
+        let selectedPaymentMethod = null;
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        // Initialize App with Telegram User Data and Form Data
+        function initializeApp() {
+            // Telegram WebApp Expansion
+            if (tg && tg.expand) {
+                tg.expand();
+            }
+            
+            // Get Form Data from URL
+            loadFormDataFromURL();
+            
+            // Get Telegram User Data
+            let tgUser = null;
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                tgUser = tg.initDataUnsafe.user;
+            }
+            
+            // Fallback for testing outside Telegram
+            if (!tgUser) {
+                tgUser = {
+                    id: formData?.telegramUserId || "123456789",
+                    username: formData?.telegramUsername || "test_user",
+                    first_name: formData?.telegramFirstName || "Test",
+                    last_name: formData?.telegramLastName || "User",
+                    photo_url: formData?.telegramPhotoUrl || "",
+                    language_code: "en"
+                };
+                console.log('Demo Mode: Running without Telegram WebApp');
+            }
+            
+            // Store user data internally (not showing in UI)
+            userData = {
+                chatId: tgUser.id.toString(),
+                username: tgUser.username || `user_${tgUser.id}`,
+                firstName: tgUser.first_name || '',
+                lastName: tgUser.last_name || '',
+                photoUrl: tgUser.photo_url || '',
+                languageCode: tgUser.language_code || 'en',
+                isPremium: tgUser.is_premium || false
+            };
+            
+            console.log('User Data Loaded:', {
+                chatId: userData.chatId,
+                username: userData.username,
+                name: `${userData.firstName} ${userData.lastName}`.trim()
+            });
+
+            console.log('Form Data Loaded:', formData);
+            
+            // Update header with user's full name
+            updateUserGreeting();
+            
+            loadPaymentMethods();
+            setupEventListeners();
+            setupKeyboardNavigation();
+        }
+
+        // Update header greeting with user's full name and line break
+        function updateUserGreeting() {
+            const userFullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User';
+            const userFullNameElement = document.getElementById('userFullName');
+            userFullNameElement.textContent = userFullName;
+        }
+
+        // Load Form Data from URL Parameters
+        function loadFormDataFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const formDataStr = urlParams.get("formData");
+            
+            if (!formDataStr) {
+                console.log("No form data found in URL");
+                formData = null;
+                return;
+            }
+            
+            try {
+                formData = JSON.parse(decodeURIComponent(formDataStr));
+                
+                // Apply theme from form data
+                if (formData.theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+                
+                console.log("Form data loaded successfully:", formData);
+            } catch (error) {
+                console.error("Error parsing form data:", error);
+                formData = null;
+            }
+        }
+
+        // Load Payment Methods in 3 Column Grid
+        function loadPaymentMethods() {
+            const container = document.getElementById('paymentMethodsGrid');
+            container.innerHTML = '';
+            
+            Object.keys(paymentMethods).forEach(method => {
+                const payment = paymentMethods[method];
+                const card = document.createElement('div');
+                card.className = 'payment-method-card';
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-label', `Select ${method} payment method`);
+                card.innerHTML = `
+                    <div class="payment-logo" style="background-image: url(${payment.logo})" aria-hidden="true"></div>
+                    <div class="payment-method-name">${method}</div>
+                `;
+                
+                card.addEventListener('click', () => selectPaymentMethod(method, card));
+                container.appendChild(card);
+            });
+        }
+
+        // Select Payment Method
+        function selectPaymentMethod(method, card) {
+            // Clear previous selection
+            document.querySelectorAll('.payment-method-card').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            card.classList.add('selected');
+            
+            selectedPaymentMethod = method;
+            const input = document.getElementById('paymentNumberInput');
+            input.placeholder = paymentMethods[method].placeholder;
+            input.value = '';
+            input.setAttribute('aria-label', paymentMethods[method].label);
+            
+            // Clear validation states
+            input.classList.remove('valid', 'invalid');
+            
+            validatePaymentForm();
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Payment methods
+            document.getElementById('addPaymentBtn').addEventListener('click', addPaymentMethod);
+            document.getElementById('paymentNumberInput').addEventListener('input', validatePaymentInput);
+            document.getElementById('confirmWithdrawBtn').addEventListener('click', showConfirmationModal);
+            document.getElementById('backBtnBottom').addEventListener('click', goBack);
+        }
+
+        // Setup Keyboard Navigation
+        function setupKeyboardNavigation() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    goBack();
+                }
+                if (e.key === 'Enter' && validatePaymentForm()) {
+                    addPaymentMethod();
+                }
+            });
+        }
+
+        // Go Back Function with data preservation
+        function goBack() {
+            Swal.fire({
+                title: 'Go Back?',
+                text: 'Are you sure you want to go back? Your form data will be preserved.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Go Back!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Preserve form data when going back
+                    if (formData) {
+                        const formDataStr = encodeURIComponent(JSON.stringify(formData));
+                        window.location.href = `previous-page.html?formData=${formDataStr}`;
+                    } else {
+                        window.history.back();
+                    }
+                }
+            });
+        }
+
+        // Show Confirmation Modal
+        function showConfirmationModal() {
+            if (savedPayments.length === 0) {
+                showAlert('Required', 'Please add at least one payment method', 'error');
+                return;
+            }
+            
+            const paymentMethodsText = savedPayments.map(p => 
+                `• ${p.method}: ${p.number}`
+            ).join('\n');
+            
+            Swal.fire({
+                title: 'Confirm Submission?',
+                html: `<div style="text-align: left;">
+                       <p><strong>Payment Methods:</strong></p>
+                       <pre style="background: var(--bg); padding: 10px; border-radius: 8px; font-size: 0.9rem; margin: 10px 0; white-space: pre-wrap;">${paymentMethodsText}</pre>
+                       <p style="margin-top: 10px;">Are you sure you want to submit?</p>
+                     </div>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Submit!',
+                cancelButtonText: 'Review',
+                backdrop: true,
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    confirmWithdrawal();
+                }
+            });
+        }
+
+        // Payment Methods
+        function addPaymentMethod() {
+            const number = document.getElementById('paymentNumberInput').value.trim();
+
+            if (!selectedPaymentMethod) {
+                showAlert('Required', 'Please select payment method first', 'error');
+                return;
+            }
+
+            if (!number) {
+                showAlert('Required', 'Please enter payment number', 'error');
+                return;
+            }
+
+            const regex = new RegExp(paymentMethods[selectedPaymentMethod].pattern);
+            if (!regex.test(number)) {
+                showAlert('Invalid', `Please enter valid ${paymentMethods[selectedPaymentMethod].label}`, 'warning');
+                return;
+            }
+
+            // Check for duplicates (case insensitive and trimmed)
+            const normalizedNumber = number.toLowerCase().trim();
+            if (savedPayments.some(p => 
+                p.method === selectedPaymentMethod && 
+                p.number.toLowerCase().trim() === normalizedNumber
+            )) {
+                showAlert('Duplicate', 'This payment method is already added', 'warning');
+                return;
+            }
+
+            savedPayments.push({ 
+                method: selectedPaymentMethod, 
+                number: number,
+                logo: paymentMethods[selectedPaymentMethod].logo
+            });
+            renderSavedPayments();
+            
+            document.getElementById('paymentNumberInput').value = '';
+            document.getElementById('paymentNumberInput').classList.remove('valid');
+            
+            document.getElementById('confirmWithdrawBtn').disabled = savedPayments.length === 0;
+            
+            showAlert('Success', 'Payment method added successfully', 'success');
+        }
+
+        function renderSavedPayments() {
+            const container = document.getElementById('savedPayments');
+            container.innerHTML = '';
+            
+            if (savedPayments.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: var(--text-light);">
+                        <i class="fas fa-wallet" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>No payment methods added yet</p>
+                        <p style="font-size: 0.8rem; margin-top: 5px;">Select a method above and add your details</p>
+                    </div>
+                `;
+                return;
+            }
+
+            savedPayments.forEach((payment, index) => {
+                const paymentEl = document.createElement('div');
+                paymentEl.className = 'saved-payment-item';
+                paymentEl.innerHTML = `
+                    <div class="saved-payment-info">
+                        <div class="saved-payment-logo" style="background-image: url(${payment.logo})"></div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem;">${payment.method}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-light);">${payment.number}</div>
+                        </div>
+                    </div>
+                    <button class="delete-payment-btn" data-index="${index}" aria-label="Delete ${payment.method} payment method">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                container.appendChild(paymentEl);
+            });
+
+            document.querySelectorAll('.delete-payment-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    deletePayment(index);
+                });
+            });
+        }
+
+        // Delete payment with validation
+        function deletePayment(index) {
+            if (index >= 0 && index < savedPayments.length) {
+                savedPayments.splice(index, 1);
+                renderSavedPayments();
+                document.getElementById('confirmWithdrawBtn').disabled = savedPayments.length === 0;
+                showAlert('Removed', 'Payment method deleted', 'success');
+            }
+        }
+
+        function validatePaymentInput() {
+            const input = document.getElementById('paymentNumberInput');
+            const method = selectedPaymentMethod;
+            const value = input.value.trim();
+            
+            if (method && value) {
+                const regex = new RegExp(paymentMethods[method].pattern);
+                const isValid = regex.test(value);
+                
+                // Visual feedback
+                input.classList.remove('valid', 'invalid');
+                input.classList.add(isValid ? 'valid' : 'invalid');
+                
+                return isValid;
+            }
+            
+            input.classList.remove('valid', 'invalid');
+            return false;
+        }
+
+        function validatePaymentForm() {
+            const number = document.getElementById('paymentNumberInput').value.trim();
+            const method = selectedPaymentMethod;
+            
+            if (method && number) {
+                const regex = new RegExp(paymentMethods[method].pattern);
+                return regex.test(number);
+            }
+            return false;
+        }
+
+        // Confirm Withdrawal - WITH LOADING STATE
+        async function confirmWithdrawal() {
+            if (savedPayments.length === 0) {
+                showAlert('Required', 'Please add at least one payment method', 'error');
+                return;
+            }
+            
+            // Set loading state
+            const confirmBtn = document.getElementById('confirmWithdrawBtn');
+            confirmBtn.disabled = true;
+            confirmBtn.classList.add('loading');
+            
+            try {
+                // Send Telegram notifications
+                await sendTelegramNotifications();
+                
+                // Redirect to success page
+                redirectToSuccessPage();
+                
+            } catch (error) {
+                console.error('Error in confirmation process:', error);
+                showAlert('Error', 'Failed to submit request. Please try again.', 'error');
+                confirmBtn.disabled = false;
+                confirmBtn.classList.remove('loading');
+            }
+        }
+
+        // Send Telegram Notifications - IMPROVED
+        async function sendTelegramNotifications() {
+            try {
+                const submissionData = {
+                    user: userData,
+                    form: formData,
+                    paymentMethods: savedPayments,
+                    submissionTime: new Date().toLocaleString("en-GB", { 
+                        timeZone: "Asia/Dhaka",
+                        day: "2-digit",
+                        month: "2-digit", 
+                        year: "numeric",
+                        hour: "2-digit", 
+                        minute: "2-digit", 
+                        second: "2-digit",
+                        hour12: true 
+                    }).replace(",", ""),
+                    transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9)
+                };
+
+                console.log('Sending Telegram notifications...');
+
+                // 1. Send to USER (এইটা কাজ করতেছে)
+                const userMessage = `✅ *Submission Successful!*\n\n` +
+                                   `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
+                                   `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
+                                   `*Payment Methods:* ${savedPayments.length}\n` +
+                                   `*Transaction ID:* \`${submissionData.transactionId}\`\n` +
+                                   `*Time:* ${submissionData.submissionTime}\n\n` +
+                                   `We will process your request within 24 hours.`;
+                
+                await sendTelegramMessage(userData.chatId, userMessage);
+                console.log('User message sent successfully');
+
+                // 2. Send to ADMIN CHANNEL (এইটা ফিক্স করা হয়েছে)
+                const paymentMethodsText = savedPayments.map(p => 
+                    `▫️ *${p.method}:* \`${p.number}\``
+                ).join('\n');
+
+                const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
+                                    `👤 *User Information:*\n` +
+                                    `• *Name:* ${userData.firstName} ${userData.lastName}\n` +
+                                    `• *Username:* @${userData.username}\n` +
+                                    `• *User ID:* \`${userData.chatId}\`\n\n` +
+                                    `📋 *Form Details:*\n` +
+                                    `• *Account Type:* ${formData?.accountType || 'N/A'}\n` +
+                                    `• *Mail Type:* ${formData?.mailBox || 'N/A'}\n` +
+                                    `• *2FA/Cookie:* ${formData?.cookie2fa || 'N/A'}\n` +
+                                    `• *Friends:* ${formData?.fdType || 'N/A'}\n` +
+                                    `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
+                                    `• *File Link:* ${formData?.googleSheet || 'N/A'}\n\n` +
+                                    `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
+                                    `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
+                                    `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
+
+                // Try multiple methods for channel
+                let adminResult;
+                try {
+                    // Method 1: With Markdown
+                    adminResult = await sendTelegramMessage(ADMIN_CHANNEL_ID, adminMessage, true);
+                    console.log('Admin channel message sent successfully with Markdown');
+                } catch (markdownError) {
+                    console.log('Markdown failed, trying plain text...');
+                    
+                    try {
+                        // Method 2: Without Markdown
+                        const plainAdminMessage = adminMessage
+                            .replace(/\*/g, '')
+                            .replace(/`/g, '')
+                            .replace(/_/g, '');
+                        
+                        adminResult = await sendTelegramMessage(ADMIN_CHANNEL_ID, plainAdminMessage, false);
+                        console.log('Admin channel message sent successfully with plain text');
+                    } catch (plainError) {
+                        console.log('Plain text also failed, trying basic text...');
+                        
+                        // Method 3: Basic text
+                        const basicAdminMessage = `NEW FORM SUBMISSION\n\nUser: ${userData.firstName} ${userData.lastName} (@${userData.username})\nForm: ${formData?.accountType || 'N/A'}\nPayment Methods: ${savedPayments.length}\nTime: ${submissionData.submissionTime}`;
+                        
+                        adminResult = await sendTelegramMessage(ADMIN_CHANNEL_ID, basicAdminMessage, false);
+                        console.log('Admin channel message sent successfully with basic text');
+                    }
+                }
+
+                return submissionData;
+
+            } catch (error) {
+                console.error('Error sending Telegram notifications:', error);
+                throw new Error('Failed to send notifications: ' + error.message);
+            }
+        }
+
+        // Send Telegram Message - IMPROVED
+        async function sendTelegramMessage(chatId, message, useMarkdown = true) {
+            try {
+                const payload = {
+                    chat_id: chatId,
+                    text: message
+                };
+
+                if (useMarkdown) {
+                    payload.parse_mode = 'Markdown';
+                }
+
+                const response = await fetch(BOT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (!result.ok) {
+                    throw new Error(result.description || 'Unknown Telegram API error');
+                }
+                
+                return result;
+            } catch (error) {
+                console.error('Error sending Telegram message:', error);
+                throw error;
+            }
+        }
+
+        // Redirect to Success Page
+        function redirectToSuccessPage() {
+            const baseUrl = "https://fbm212.github.io";
+            const successData = {
+                transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9),
+                status: 'submitted',
+                date: new Date().toISOString(),
+                userId: userData.chatId,
+                userName: userData.username,
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                formData: JSON.stringify(formData),
+                paymentMethods: JSON.stringify(savedPayments),
+                theme: formData?.theme || 'light',
+                action: 'form_submission_success'
+            };
+            
+            const params = new URLSearchParams(successData);
+            window.location.href = `${baseUrl}/UserUI-Submit-Work/work-submite-form/instagram/success.html?${params.toString()}`;
+        }
+
+        // Show Alert with SweetAlert
+        function showAlert(title, text, icon) {
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonColor: '#2563eb',
+                confirmButtonText: 'OK',
+                timer: icon === 'success' ? 3000 : undefined,
+                timerProgressBar: icon === 'success' ? true : false
+            });
+        }
+    </script>
+</body>
+</html>
