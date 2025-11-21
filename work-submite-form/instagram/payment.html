@@ -1223,10 +1223,22 @@
         }
 
         // Redirect to Success Page
-        // Redirect to Success Page - UPDATED
+       // Redirect to Success Page - COMPLETELY UPDATED
 function redirectToSuccessPage() {
     const baseUrl = "https://fbm212.github.io";
     
+    // Get current time for submission
+    const submissionTime = new Date().toLocaleString("en-GB", { 
+        timeZone: "Asia/Dhaka",
+        day: "2-digit",
+        month: "2-digit", 
+        year: "numeric",
+        hour: "2-digit", 
+        minute: "2-digit", 
+        second: "2-digit",
+        hour12: true 
+    }).replace(",", "");
+
     // Prepare data in the exact format that success page expects
     const successData = {
         // Flat structure parameters
@@ -1240,19 +1252,19 @@ function redirectToSuccessPage() {
         theme: formData?.theme || 'light',
         action: 'form_submission_success',
         
-        // Also include the nested formData as JSON string
+        // All the form data that success page needs for file info section
+        accountType: formData?.accountType || 'N/A',
+        mailBox: formData?.mailBox || 'N/A',
+        cookie2fa: formData?.cookie2fa || 'N/A',
+        fdType: formData?.fdType || 'N/A',
+        ttlId: formData?.ttlId || 'N/A',
+        googleSheet: formData?.googleSheet || 'N/A',
+        submissionTime: submissionTime,
+        
+        // Also include the complete nested formData as JSON string for backward compatibility
         formData: JSON.stringify({
             timestamp: Date.now().toString(),
-            submissionTime: new Date().toLocaleString("en-GB", { 
-                timeZone: "Asia/Dhaka",
-                day: "2-digit",
-                month: "2-digit", 
-                year: "numeric",
-                hour: "2-digit", 
-                minute: "2-digit", 
-                second: "2-digit",
-                hour12: true 
-            }).replace(",", ""),
+            submissionTime: submissionTime,
             accountType: formData?.accountType || 'N/A',
             mailBox: formData?.mailBox || 'N/A', 
             cookie2fa: formData?.cookie2fa || 'N/A',
@@ -1260,7 +1272,9 @@ function redirectToSuccessPage() {
             ttlId: formData?.ttlId || 'N/A',
             googleSheet: formData?.googleSheet || 'N/A',
             tgChatId: userData.chatId,
-            userName: userData.username
+            userName: userData.username,
+            firstName: userData.firstName,
+            lastName: userData.lastName
         }),
         
         // Include payment methods as JSON string
@@ -1269,16 +1283,16 @@ function redirectToSuccessPage() {
     
     const params = new URLSearchParams();
     
-    // Add all flat parameters
+    // Add all parameters (both flat and nested)
     Object.keys(successData).forEach(key => {
         if (successData[key] !== null && successData[key] !== undefined) {
             params.append(key, successData[key]);
         }
     });
     
+    console.log('Redirecting to success page with data:', successData);
     window.location.href = `${baseUrl}/UserUI-Submit-Work/work-submite-form/instagram/success.html?${params.toString()}`;
 }
-
         // Show Alert with SweetAlert
         function showAlert(title, text, icon) {
             Swal.fire({
