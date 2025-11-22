@@ -561,8 +561,12 @@
         }).replace(",", "")
       };
 
+      // ✅ Google Sheets লিঙ্ক আলাদাভাবে encode করুন
+      const tempFormData = {...formData};
+      tempFormData.googleSheet = encodeURIComponent(googleSheet);
+
       // ডেটা URL প্যারামিটারে কনভার্ট করুন
-      const encodedData = encodeURIComponent(JSON.stringify(formData));
+      const encodedData = encodeURIComponent(JSON.stringify(tempFormData));
       
       // পরের পেইজে রিডাইরেক্ট করুন
       window.location.href = `${nextPageUrl}?formData=${encodedData}`;
