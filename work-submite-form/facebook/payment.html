@@ -729,6 +729,11 @@
         formData = JSON.parse(decodeURIComponent(formDataStr));
         console.log("Form data loaded successfully:", formData);
         
+        // ✅ Google Sheets লিঙ্ক decode করুন
+        if (formData.googleSheet) {
+            formData.googleSheet = decodeURIComponent(formData.googleSheet);
+        }
+        
         // থিম অ্যাপ্লাই করুন
         if (formData.theme === 'dark') {
             document.body.classList.add('dark-mode');
