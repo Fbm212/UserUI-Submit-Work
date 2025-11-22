@@ -1085,80 +1085,85 @@
         }
 
         // Send Telegram to Admin Channel
-        async function sendTelegramToAdmin() {
+        // Send Telegram to Admin Channel
+async function sendTelegramToAdmin() {
+    try {
+        const submissionData = {
+            user: userData,
+            form: formData,
+            paymentMethods: savedPayments,
+            submissionTime: new Date().toLocaleString("en-GB", { 
+                timeZone: "Asia/Dhaka",
+                day: "2-digit",
+                month: "2-digit", 
+                year: "numeric",
+                hour: "2-digit", 
+                minute: "2-digit", 
+                second: "2-digit",
+                hour12: true 
+            }).replace(",", ""),
+            transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9)
+        };
+
+        console.log('Sending Telegram to admin channel...');
+
+        const paymentMethodsText = savedPayments.map(p => 
+            `▫️ *${p.method}:* \`${p.number}\``
+        ).join('\n');
+
+        // ✅ Google Sheets লিঙ্ক encode করে নিন
+        const originalSheetLink = formData?.googleSheet || 'N/A';
+        const encodedSheetLink = encodeURIComponent(originalSheetLink);
+
+        const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
+                            `👤 *User Info:*\n` +
+                            `• *Name:* ${userData.firstName} ${userData.lastName}\n` +
+                            `• *UN:* @${userData.username}\n` +
+                            `• *UID:* \`${userData.chatId}\`\n\n` +
+                            `📋 *Form Details:*\n` +
+                            `• *AccType:* ${formData?.accountType || 'N/A'}\n` +
+                            `• *MlType:* ${formData?.mailBox || 'N/A'}\n` +
+                            `• *2FA/Cookie:* ${formData?.cookie2fa || 'N/A'}\n` +
+                            `• *Friends:* ${formData?.fdType || 'N/A'}\n` +
+                            `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n\n` +
+                            `• *File Link:* ${originalSheetLink}\n\n` +
+                            `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
+                            `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
+                            `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
+
+        // Try multiple methods for channel
+        try {
+            await sendTelegramMessage(ADMIN_CHANNEL_ID, adminMessage, true);
+            console.log('Admin channel message sent successfully');
+            return true;
+        } catch (markdownError) {
+            console.log('Markdown failed, trying plain text...');
+            
             try {
-                const submissionData = {
-                    user: userData,
-                    form: formData,
-                    paymentMethods: savedPayments,
-                    submissionTime: new Date().toLocaleString("en-GB", { 
-                        timeZone: "Asia/Dhaka",
-                        day: "2-digit",
-                        month: "2-digit", 
-                        year: "numeric",
-                        hour: "2-digit", 
-                        minute: "2-digit", 
-                        second: "2-digit",
-                        hour12: true 
-                    }).replace(",", ""),
-                    transactionId: 'TX' + Date.now() + Math.random().toString(36).substr(2, 9)
-                };
-
-                console.log('Sending Telegram to admin channel...');
-
-                const paymentMethodsText = savedPayments.map(p => 
-                    `▫️ *${p.method}:* \`${p.number}\``
-                ).join('\n');
-
-                const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
-                                    `👤 *User Information:*\n` +
-                                    `• *Name:* ${userData.firstName} ${userData.lastName}\n` +
-                                    `• *Username:* @${userData.username}\n` +
-                                    `• *User ID:* \`${userData.chatId}\`\n\n` +
-                                    `📋 *Form Details:*\n` +
-                                    `• *Account Type:* ${formData?.accountType || 'N/A'}\n` +
-                                    `• *Mail Type:* ${formData?.mailBox || 'N/A'}\n` +
-                                    `• *2FA/Cookie:* ${formData?.cookie2fa || 'N/A'}\n` +
-                                    `• *Friends:* ${formData?.fdType || 'N/A'}\n` +
-                                    `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
-                                    `• *File Link:* ${formData?.googleSheet || 'N/A'}\n\n` +
-                                    `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
-                                    `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
-                                    `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
-
-                // Try multiple methods for channel
-                try {
-                    await sendTelegramMessage(ADMIN_CHANNEL_ID, adminMessage, true);
-                    console.log('Admin channel message sent successfully');
-                    return true;
-                } catch (markdownError) {
-                    console.log('Markdown failed, trying plain text...');
-                    
-                    try {
-                        const plainAdminMessage = adminMessage
-                            .replace(/\*/g, '')
-                            .replace(/`/g, '')
-                            .replace(/_/g, '');
-                        
-                        await sendTelegramMessage(ADMIN_CHANNEL_ID, plainAdminMessage, false);
-                        console.log('Admin channel message sent successfully with plain text');
-                        return true;
-                    } catch (plainError) {
-                        console.log('Plain text also failed, trying basic text...');
-                        
-                        const basicAdminMessage = `NEW FORM SUBMISSION\n\nUser: ${userData.firstName} ${userData.lastName} (@${userData.username})\nForm: ${formData?.accountType || 'N/A'}\nPayment Methods: ${savedPayments.length}\nTime: ${submissionData.submissionTime}`;
-                        
-                        await sendTelegramMessage(ADMIN_CHANNEL_ID, basicAdminMessage, false);
-                        console.log('Admin channel message sent successfully with basic text');
-                        return true;
-                    }
-                }
-
-            } catch (error) {
-                console.error('Error sending Telegram to admin:', error);
-                return false;
+                const plainAdminMessage = adminMessage
+                    .replace(/\*/g, '')
+                    .replace(/`/g, '')
+                    .replace(/_/g, '');
+                
+                await sendTelegramMessage(ADMIN_CHANNEL_ID, plainAdminMessage, false);
+                console.log('Admin channel message sent successfully with plain text');
+                return true;
+            } catch (plainError) {
+                console.log('Plain text also failed, trying basic text...');
+                
+                const basicAdminMessage = `NEW FORM SUBMISSION\n\nUser: ${userData.firstName} ${userData.lastName} (@${userData.username})\nForm: ${formData?.accountType || 'N/A'}\nFile Link: ${originalSheetLink}\nPayment Methods: ${savedPayments.length}\nTime: ${submissionData.submissionTime}`;
+                
+                await sendTelegramMessage(ADMIN_CHANNEL_ID, basicAdminMessage, false);
+                console.log('Admin channel message sent successfully with basic text');
+                return true;
             }
         }
+
+    } catch (error) {
+        console.error('Error sending Telegram to admin:', error);
+        return false;
+    }
+}
 
         // Send Telegram to User
         async function sendTelegramToUser() {
@@ -1167,7 +1172,7 @@
                                    `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
                                    `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
                                    `*Payment Methods:* ${savedPayments.length}\n` +
-                                   `*Transaction ID:* \`TX${Date.now()}\`\n` +
+                                   `*Transaction ID:* \`${submissionData.transactionId}\`\n` +
                                    `*Time:* ${new Date().toLocaleString("en-GB", { 
                                        timeZone: "Asia/Dhaka",
                                        day: "2-digit",
