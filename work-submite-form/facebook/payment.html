@@ -1085,7 +1085,7 @@
         }
 
         // Send Telegram to Admin Channel
-        // Send Telegram to Admin Channel
+       // Send Telegram to Admin Channel
 async function sendTelegramToAdmin() {
     try {
         const submissionData = {
@@ -1116,16 +1116,16 @@ async function sendTelegramToAdmin() {
         const encodedSheetLink = encodeURIComponent(originalSheetLink);
 
         const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
-                            `👤 *User Info:*\n` +
+                            `👤 *User Information:*\n` +
                             `• *Name:* ${userData.firstName} ${userData.lastName}\n` +
-                            `• *UN:* @${userData.username}\n` +
-                            `• *UID:* \`${userData.chatId}\`\n\n` +
+                            `• *Username:* @${userData.username}\n` +
+                            `• *User ID:* \`${userData.chatId}\`\n\n` +
                             `📋 *Form Details:*\n` +
-                            `• *AccType:* ${formData?.accountType || 'N/A'}\n` +
-                            `• *MlType:* ${formData?.mailBox || 'N/A'}\n` +
+                            `• *Account Type:* ${formData?.accountType || 'N/A'}\n` +
+                            `• *Mail Type:* ${formData?.mailBox || 'N/A'}\n` +
                             `• *2FA/Cookie:* ${formData?.cookie2fa || 'N/A'}\n` +
                             `• *Friends:* ${formData?.fdType || 'N/A'}\n` +
-                            `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n\n` +
+                            `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
                             `• *File Link:* ${originalSheetLink}\n\n` +
                             `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
                             `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
@@ -1164,7 +1164,6 @@ async function sendTelegramToAdmin() {
         return false;
     }
 }
-
         // Send Telegram to User
         async function sendTelegramToUser() {
             try {
@@ -1172,7 +1171,7 @@ async function sendTelegramToAdmin() {
                                    `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
                                    `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
                                    `*Payment Methods:* ${savedPayments.length}\n` +
-                                   `*Transaction ID:* \`${submissionData.transactionId}\`\n` +
+                                   `*Transaction ID:* \`TX${Date.now()}\`\n` +
                                    `*Time:* ${new Date().toLocaleString("en-GB", { 
                                        timeZone: "Asia/Dhaka",
                                        day: "2-digit",
