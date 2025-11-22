@@ -1131,7 +1131,7 @@ async function sendTelegramToAdmin() {
                             `• *2FA/Cookie:* ${formData?.cookie2fa || 'N/A'}\n` +
                             `• *Friends:* ${formData?.fdType || 'N/A'}\n` +
                             `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
-                            `• *File Link:* ${originalSheetLink}\n\n` +
+                            `• *File Link:* ${encodedSheetLink}\n\n` +
                             `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
                             `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
                             `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
