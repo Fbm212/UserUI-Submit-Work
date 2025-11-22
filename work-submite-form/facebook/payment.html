@@ -715,7 +715,7 @@
         }
 
         // Load Form Data from URL Parameters
-       function loadFormDataFromURL() {
+function loadFormDataFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     const formDataStr = urlParams.get("formData");
     
@@ -729,9 +729,10 @@
         formData = JSON.parse(decodeURIComponent(formDataStr));
         console.log("Form data loaded successfully:", formData);
         
-        // ✅ Google Sheets লিঙ্ক decode করুন
+        // ✅ Google Sheets লিঙ্ক decode করুন এবং [UNDERSCORE] কে _ তে convert করুন
         if (formData.googleSheet) {
             formData.googleSheet = decodeURIComponent(formData.googleSheet);
+            formData.googleSheet = formData.googleSheet.replace(/\[UNDERSCORE\]/g, '_');
         }
         
         // থিম অ্যাপ্লাই করুন
