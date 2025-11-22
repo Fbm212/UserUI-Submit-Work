@@ -472,7 +472,7 @@
       }
     });
 
-    // Continue বাটন ক্লিক হ্যান্ডলার - UPDATED
+    // Continue বাটন ক্লিক হ্যান্ডলার - FINAL UPDATED
     document.getElementById("continue-btn").addEventListener("click", function () { 
       const accountType = document.getElementById("account-type").value; 
       const mailBox = document.getElementById("mail-box").value || " "; 
@@ -528,7 +528,7 @@
       }
 
       // ✅ সমস্ত ডেটা সংগ্রহ করে পরের পেইজে রিডাইরেক্ট
-      const nextPageUrl = "https://fbm212.github.io/UserUI-Submit-Work/work-submite-form/facebook/payment.html"; // আপনার পরের পেইজের URL
+      const nextPageUrl = "https://fbm212.github.io/UserUI-Submit-Work/work-submite-form/facebook/payment.html";
 
       // সমস্ত ডেটা প্রস্তুত করুন
       const formData = {
@@ -548,7 +548,7 @@
         ttlId: ttlId,
         tgUsername: tgUsername,
         tgChatId: tgChatId,
-        googleSheet: googleSheet,
+        googleSheet: googleSheet.replace(/_/g, '[UNDERSCORE]'), // ✅ আন্ডারস্কোর প্রোটেক্ট করা
         submissionTime: new Date().toLocaleString("en-GB", { 
           timeZone: "Asia/Dhaka", 
           day: "2-digit", 
@@ -561,16 +561,13 @@
         }).replace(",", "")
       };
 
-      // ✅ Google Sheets লিঙ্ক আলাদাভাবে encode করুন
-      const tempFormData = {...formData};
-      tempFormData.googleSheet = encodeURIComponent(googleSheet);
-
       // ডেটা URL প্যারামিটারে কনভার্ট করুন
-      const encodedData = encodeURIComponent(JSON.stringify(tempFormData));
+      const encodedData = encodeURIComponent(JSON.stringify(formData));
       
       // পরের পেইজে রিডাইরেক্ট করুন
       window.location.href = `${nextPageUrl}?formData=${encodedData}`;
     });
+
   </script>
 </body>
 </html>
