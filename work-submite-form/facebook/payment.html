@@ -729,11 +729,10 @@ function loadFormDataFromURL() {
         formData = JSON.parse(decodeURIComponent(formDataStr));
         console.log("Form data loaded successfully:", formData);
         
-        // ✅ Google Sheets লিঙ্ক decode করুন এবং [UNDERSCORE] কে _ তে convert করুন
-        if (formData.googleSheet) {
-            formData.googleSheet = decodeURIComponent(formData.googleSheet);
-            formData.googleSheet = formData.googleSheet.replace(/\[UNDERSCORE\]/g, '_');
-        }
+// ✅ শুধু decodeURIComponent করুন, [UNDERSCORE] convert করার দরকার নেই
+if (formData.googleSheet) {
+    formData.googleSheet = decodeURIComponent(formData.googleSheet);
+}
         
         // থিম অ্যাপ্লাই করুন
         if (formData.theme === 'dark') {
@@ -1130,7 +1129,7 @@ async function sendTelegramToAdmin() {
                             `• *2FA/Cookie:* ${formData?.cookie2fa || 'N/A'}\n` +
                             `• *Friends:* ${formData?.fdType || 'N/A'}\n` +
                             `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
-                            `• *File Link:* ${originalSheetLink}\n\n` +  // ✅ অরিজিনাল লিঙ্ক
+                            `• *File Link:* ${originalSheetLink}\n\n` +  // ✅ সরাসরি অরিজিনাল লিঙ্ক
                             `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
                             `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
                             `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
