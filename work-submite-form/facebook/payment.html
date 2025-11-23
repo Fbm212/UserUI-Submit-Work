@@ -1091,7 +1091,6 @@ function loadFormDataFromURL() {
         }
 
         // Send Telegram to Admin Channel
-       // Send Telegram to Admin Channel
 async function sendTelegramToAdmin() {
     try {
         const submissionData = {
@@ -1117,9 +1116,8 @@ async function sendTelegramToAdmin() {
             `▫️ *${p.method}:* \`${p.number}\``
         ).join('\n');
 
-        // ✅ Google Sheets লিঙ্ক encode করে নিন
+        // ✅ শুধু অরিজিনাল লিঙ্ক ব্যবহার করুন
         const originalSheetLink = formData?.googleSheet || 'N/A';
-        const encodedSheetLink = encodeURIComponent(originalSheetLink);
 
         const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
                             `👤 *User Information:*\n` +
@@ -1132,7 +1130,7 @@ async function sendTelegramToAdmin() {
                             `• *2FA/Cookie:* ${formData?.cookie2fa || 'N/A'}\n` +
                             `• *Friends:* ${formData?.fdType || 'N/A'}\n` +
                             `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
-                            `• *File Link:* ${encodedSheetLink}\n\n` +
+                            `• *File Link:* ${originalSheetLink}\n\n` +  // ✅ অরিজিনাল লিঙ্ক
                             `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
                             `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
                             `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
