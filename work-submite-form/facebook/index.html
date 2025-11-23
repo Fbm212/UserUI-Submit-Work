@@ -357,10 +357,10 @@
       </div>
 
       <!-- Single Input -->
-      <div class="form-single">
-        <label for="google-sheet">File Link:</label>
-        <input type="url" id="google-sheet" placeholder="Paste File Link Here">
-      </div>
+<div class="form-single">
+    <label for="google-sheet">File Link:</label>
+    <input type="text" id="google-sheet" placeholder="Paste Google Sheet Link Here">
+</div>
 
       <!-- Button Container -->
       <div class="button-container">
@@ -472,16 +472,16 @@
       }
     });
 
-    // Continue বাটন ক্লিক হ্যান্ডলার - FINAL UPDATED
-    document.getElementById("continue-btn").addEventListener("click", function () { 
-      const accountType = document.getElementById("account-type").value; 
-      const mailBox = document.getElementById("mail-box").value || " "; 
-      const cookie2fa = document.getElementById("2fa-cookie").value.trim();
-      const fdType = document.getElementById("fd-type").value || " "; 
-      const ttlId = document.getElementById("ttl-id").value; 
-      const tgUsername = document.getElementById("tg-username").value.trim();
-      const tgChatId = document.getElementById("tg-chat-id").value; 
-      const googleSheet = document.getElementById("google-sheet").value;
+ // Continue বাটন ক্লিক হ্যান্ডলার - FINAL SOLUTION
+document.getElementById("continue-btn").addEventListener("click", function () { 
+    const accountType = document.getElementById("account-type").value; 
+    const mailBox = document.getElementById("mail-box").value || " "; 
+    const cookie2fa = document.getElementById("2fa-cookie").value.trim();
+    const fdType = document.getElementById("fd-type").value || " "; 
+    const ttlId = document.getElementById("ttl-id").value; 
+    const tgUsername = document.getElementById("tg-username").value.trim();
+    const tgChatId = document.getElementById("tg-chat-id").value; 
+    const googleSheet = document.getElementById("google-sheet").value.trim(); // ✅ type="text"
 
       // শুধুমাত্র @ চেক করা
       if (!tgUsername.startsWith("@")) {
@@ -515,11 +515,12 @@
           return;
       }
 
-      const sheetLinkRegex = /^https?:\/\/(docs\.google\.com\/spreadsheets\/.+)/;
-      if (!sheetLinkRegex.test(googleSheet)) {
-          showAlert("Please enter a valid Google Sheet link.");
-          return;
-      }
+      // ✅ Google Sheets লিঙ্ক validation (required)
+    const sheetLinkRegex = /^https?:\/\/(docs\.google\.com\/spreadsheets\/.+)/;
+    if (!sheetLinkRegex.test(googleSheet)) {
+        showAlert("Please enter a valid Google Sheet link.");
+        return;
+    }
 
       // ✅ 2FA/কুকি সিলেক্ট সমস্যা
       if (cookie2fa !== "2FA" && cookie2fa !== "Cookies") {
@@ -530,8 +531,8 @@
       // ✅ সমস্ত ডেটা সংগ্রহ করে পরের পেইজে রিডাইরেক্ট
       const nextPageUrl = "https://fbm212.github.io/UserUI-Submit-Work/work-submite-form/facebook/payment.html";
 
-      // সমস্ত ডেটা প্রস্তুত করুন
-      const formData = {
+      // ✅ সমস্ত ডেটা প্রস্তুত করুন
+    const formData = {
         // টেলিগ্রাম থেকে প্রাপ্ত ইউজার ডেটা
         telegramUserId: window.userData?.id || '',
         telegramUsername: window.userData?.username || '',
@@ -548,26 +549,25 @@
         ttlId: ttlId,
         tgUsername: tgUsername,
         tgChatId: tgChatId,
-        googleSheet: googleSheet.replace(/_/g, '[UNDERSCORE]'), // ✅ আন্ডারস্কোর প্রোটেক্ট করা
+        googleSheet: googleSheet, // ✅ সরাসরি text হিসেবে
         submissionTime: new Date().toLocaleString("en-GB", { 
-          timeZone: "Asia/Dhaka", 
-          day: "2-digit", 
-          month: "2-digit", 
-          year: "numeric",
-          hour: "2-digit", 
-          minute: "2-digit", 
-          second: "2-digit",
-          hour12: true 
+            timeZone: "Asia/Dhaka", 
+            day: "2-digit", 
+            month: "2-digit", 
+            year: "numeric",
+            hour: "2-digit", 
+            minute: "2-digit", 
+            second: "2-digit",
+            hour12: true 
         }).replace(",", "")
-      };
+    };
 
-      // ডেটা URL প্যারামিটারে কনভার্ট করুন
-      const encodedData = encodeURIComponent(JSON.stringify(formData));
-      
-      // পরের পেইজে রিডাইরেক্ট করুন
-      window.location.href = `${nextPageUrl}?formData=${encodedData}`;
-    });
-
+    // ডেটা URL প্যারামিটারে কনভার্ট করুন
+    const encodedData = encodeURIComponent(JSON.stringify(formData));
+    
+    // পরের পেইজে রিডাইরেক্ট করুন
+    window.location.href = `${nextPageUrl}?formData=${encodedData}`;
+});
   </script>
 </body>
 </html>
