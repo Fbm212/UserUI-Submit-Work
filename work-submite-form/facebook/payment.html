@@ -1170,21 +1170,19 @@ async function sendTelegramToAdmin() {
 
 
 
-        // Send Telegram to User - WITH IMAGE & BUTTONS
+        // Send Telegram to User - WITH IMAGE & BUTTONS (Simple Version)
 async function sendTelegramToUser() {
     try {
-        // ইমেজ URL (আপনার কাস্টম ইমেজ URL দিয়ে রিপ্লেস করুন)
-        const imageUrl = "https://i.ibb.co/t5Q3JBF/Submite-Scc.jpg"; // আপনার ইমেজ URL এখানে দিন
+        // 1. ইমেজ URL (আপনার ইমেজ দিয়ে রিপ্লেস করুন)
+        const imageUrl = "https://i.ibb.co/t5Q3JBF/Submite-Scc.jpg";
         
-        // ক্যাপশন টেক্সট তৈরি
-        const captionText = `🎉 *সাবমিশন সফল হয়েছে!*\n\n` +
-                           `✅ *আপনার অর্ডারটি সফলভাবে জমা হয়েছে*\n\n` +
-                           `📋 *অর্ডার ডিটেইলস:*\n` +
-                           `• *টাইপ:* ${formData?.accountType || 'N/A'}\n` +
-                           `• *টোটাল আইডি:* ${formData?.ttlId || 'N/A'}\n` +
-                           `• *পেমেন্ট মেথড:* ${savedPayments.length} টি\n ${paymentMethodsText}\n` +
-                           `• *Trx ID:* \`${submissionData.transactionId}\`\n` +
-                           `• *সময়:* ${new Date().toLocaleString("en-GB", { 
+        // 2. একই টেক্সট (নরমাল ভার্সন)
+        const captionText = `✅ *Submission Successful!*\n\n` +
+                           `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
+                           `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
+                           `*Payment Methods:* ${savedPayments.length}\n` +
+                           `*Transaction ID:* \`TX${Date.now()}\`\n` +
+                           `*Time:* ${new Date().toLocaleString("en-GB", { 
                                timeZone: "Asia/Dhaka",
                                day: "2-digit",
                                month: "2-digit", 
@@ -1194,11 +1192,9 @@ async function sendTelegramToUser() {
                                second: "2-digit",
                                hour12: true 
                            }).replace(",", "")}\n\n` +
-                           `⏳ *স্ট্যাটাস:* প্রসেসিং\n` +
-                           `📞 *সাপোর্ট:* @mdbyoc\n\n` +
-                           `আপনার রিকোয়েস্ট ২৪ ঘন্টার মধ্যে প্রসেস করা হবে।`;
+                           `We will process your request within 24 hours.`;
 
-        // ইনলাইন কিবোর্ড বাটন তৈরি
+        // 3. দুইটা বাটন
         const inlineKeyboard = {
             inline_keyboard: [
                 [
@@ -1214,7 +1210,7 @@ async function sendTelegramToUser() {
             ]
         };
 
-        // Telegram Bot API-তে ইমেজ + ক্যাপশন + বাটনসহ মেসেজ সেন্ড করুন
+        // Telegram-এ ইমেজ + টেক্সট + বাটন সেন্ড
         const sendPhotoUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
         
         const payload = {
@@ -1236,50 +1232,43 @@ async function sendTelegramToUser() {
         const result = await response.json();
         
         if (!result.ok) {
-            console.error('Telegram API Error:', result);
-            // Fallback: যদি ইমেজ পাঠানো失败 হয়, তাহলে সাধারণ মেসেজ পাঠান
-            await sendTextFallback();
-            return true;
+            console.log('Image send failed, sending text only...');
+            // Fallback: শুধু টেক্সট মেসেজ
+            await sendTextMessageOnly();
+        } else {
+            console.log('User message with image & buttons sent successfully');
         }
         
-        console.log('User message with image sent successfully');
         return true;
         
     } catch (error) {
         console.error('Error sending Telegram to user:', error);
-        // Fallback: সাধারণ টেক্সট মেসেজ
-        await sendTextFallback();
+        // Fallback: শুধু টেক্সট মেসেজ
+        await sendTextMessageOnly();
         return true;
     }
 }
 
-// Fallback ফাংশন - শুধু টেক্সট মেসেজ
-async function sendTextFallback() {
-    try {
-        const textMessage = `🎉 *সাবমিশন সফল!*\n\n` +
-                           `*কাজ:* ${formData?.accountType || 'N/A'}\n` +
-                           `*টোটাল আইডি:* ${formData?.ttlId || 'N/A'}\n` +
-                           `*পেমেন্ট মেথড:* ${savedPayments.length}\n ${paymentMethodsText}\n` +
-                           `*Trx ID:* \`TX${Date.now()}\`\n` +
-                           `*সময়:* ${new Date().toLocaleString("en-GB", { 
-                               timeZone: "Asia/Dhaka",
-                               day: "2-digit",
-                               month: "2-digit", 
-                               year: "numeric",
-                               hour: "2-digit", 
-                               minute: "2-digit", 
-                               second: "2-digit",
-                               hour12: true 
-                           }).replace(",", "")}\n\n` +
-                           `🆘 *সাপোর্ট:* @mdbyoc\n` +
-                           `👥 *গ্রুপ:* @fbmMarket\n\n` +
-                           `আপনার রিকোয়েস্ট ২৪ ঘন্টার মধ্যে প্রসেস করা হবে।`;
-        
-        await sendTelegramMessage(userData.chatId, textMessage);
-        console.log('Fallback text message sent successfully');
-    } catch (fallbackError) {
-        console.error('Fallback also failed:', fallbackError);
-    }
+// Fallback: শুধু টেক্সট মেসেজ (যদি ইমেজ fails হয়)
+async function sendTextMessageOnly() {
+    const textMessage = `✅ *Submission Successful!*\n\n` +
+                       `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
+                       `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
+                       `*Payment Methods:* ${savedPayments.length}\n` +
+                       `*Transaction ID:* \`TX${Date.now()}\`\n` +
+                       `*Time:* ${new Date().toLocaleString("en-GB", { 
+                           timeZone: "Asia/Dhaka",
+                           day: "2-digit",
+                           month: "2-digit", 
+                           year: "numeric",
+                           hour: "2-digit", 
+                           minute: "2-digit", 
+                           second: "2-digit",
+                           hour12: true 
+                       }).replace(",", "")}\n\n` +
+                       `We will process your request within 24 hours.`;
+    
+    await sendTelegramMessage(userData.chatId, textMessage);
 }
 
         // Send Telegram Message - IMPROVED
