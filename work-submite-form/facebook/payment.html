@@ -1119,20 +1119,20 @@ async function sendTelegramToAdmin() {
         const originalSheetLink = formData?.googleSheet || 'N/A';
 
         const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
-                            `👤 *User Information:*\n` +
-                            `• *Name:* ${userData.firstName} ${userData.lastName}\n` +
-                            `• *Username:* @${userData.username}\n` +
-                            `• *User ID:* \`${userData.chatId}\`\n\n` +
-                            `📋 *Form Details:*\n` +
-                            `• *Account Type:* ${formData?.accountType || 'N/A'}\n` +
-                            `• *Mail Type:* ${formData?.mailBox || 'N/A'}\n` +
-                            `• *2FA/Cookie:* ${formData?.cookie2fa || 'N/A'}\n` +
-                            `• *Friends:* ${formData?.fdType || 'N/A'}\n` +
-                            `• *Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
-                            `• *File Link:* ${originalSheetLink}\n\n` +  // ✅ সরাসরি অরিজিনাল লিঙ্ক
-                            `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
-                            `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
-                            `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
+                    `👤 *User Information:*\n` +
+                    `• Name: ${userData.firstName} ${userData.lastName}\n` +
+                    `• Username: @${userData.username.replace(/_/g, '\\_')}\n` +
+                    `• User ID: \`${userData.chatId}\`\n\n` +
+                    `📋 *Form Details:*\n` +
+                    `• Account Type: ${formData?.accountType || 'N/A'}\n` +
+                    `• Mail Type: ${formData?.mailBox || 'N/A'}\n` +
+                    `• 2FA/Cookie: ${formData?.cookie2fa || 'N/A'}\n` +
+                    `• Friends: ${formData?.fdType || 'N/A'}\n` +
+                    `• Total IDs: ${formData?.ttlId || 'N/A'}\n` +
+                    `• File Link: ${formData?.googleSheet?.replace(/_/g, '\\_') || 'N/A'}\n\n` +
+                    `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
+                    `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
+                    `🔢 *Transaction ID:* \`${submissionData.transactionId}\``;
 
         // Try multiple methods for channel
         try {
