@@ -1170,7 +1170,7 @@ async function sendTelegramToAdmin() {
 
 
 
-        // Send Telegram to User - WITH IMAGE & BUTTONS (Spoiler Payment Methods)
+        // Send Telegram to User - WITH IMAGE & BUTTONS (Spoiler Payment Methods - Fixed)
 async function sendTelegramToUser() {
     try {
         // 1. ইমেজ URL
@@ -1179,13 +1179,13 @@ async function sendTelegramToUser() {
         // 2. ট্রানজেকশন আইডি (এডমিন চ্যানেলের মতোই)
         const transactionId = 'TX' + Date.now() + Math.random().toString(36).substr(2, 9);
         
-        // 3. পেমেন্ট মেথড টেক্সট (Spoiler ফরম্যাটে)
+        // 3. পেমেন্ট মেথড টেক্সট (Spoiler ফরম্যাটে - MarkdownV2)
         const paymentMethodsText = savedPayments.map(p => 
             `• ${p.method}: ||${p.number}||`
         ).join('\n');
 
-        // 4. ক্যাপশন টেক্সট (Spoiler পেমেন্ট মেথড সহ)
-        const captionText = `✅ *Submission Successful!*\n\n` +
+        // 4. ক্যাপশন টেক্সট (MarkdownV2 এ escape করতে হবে)
+        const captionText = `✅ *Submission Successful\\!*\n\n` +
                            `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
                            `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
                            `*Payment Methods:* ${savedPayments.length}\n\n` +
@@ -1201,7 +1201,7 @@ async function sendTelegramToUser() {
                                second: "2-digit",
                                hour12: true 
                            }).replace(",", "")}\n\n` +
-                           `We will process your request within 24 hours.`;
+                           `We will process your request within 24 hours\\.`;
 
         // 5. দুইটা বাটন
         const inlineKeyboard = {
@@ -1219,14 +1219,14 @@ async function sendTelegramToUser() {
             ]
         };
 
-        // Telegram-এ ইমেজ + টেক্সট + বাটন সেন্ড
+        // Telegram-এ ইমেজ + টেক্সট + বাটন সেন্ড (MarkdownV2 ব্যবহার করুন)
         const sendPhotoUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
         
         const payload = {
             chat_id: userData.chatId,
             photo: imageUrl,
             caption: captionText,
-            parse_mode: 'Markdown',
+            parse_mode: 'MarkdownV2', // এখানে MarkdownV2 ব্যবহার করুন
             reply_markup: JSON.stringify(inlineKeyboard)
         };
 
@@ -1265,7 +1265,7 @@ async function sendTextMessageOnly(transactionId) {
         `• ${p.method}: ||${p.number}||`
     ).join('\n');
     
-    const textMessage = `✅ *Submission Successful!*\n\n` +
+    const textMessage = `✅ *Submission Successful\\!*\n\n` +
                        `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
                        `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
                        `*Payment Methods:* ${savedPayments.length}\n\n` +
@@ -1281,10 +1281,43 @@ async function sendTextMessageOnly(transactionId) {
                            second: "2-digit",
                            hour12: true 
                        }).replace(",", "")}\n\n` +
-                       `We will process your request within 24 hours.`;
+                       `We will process your request within 24 hours\\.`;
     
-    await sendTelegramMessage(userData.chatId, textMessage);
+    // Fallback-এও MarkdownV2 ব্যবহার করুন
+    await sendTelegramMessageV2(userData.chatId, textMessage);
 }
+
+// MarkdownV2 এর জন্য আলাদা ফাংশন
+async function sendTelegramMessageV2(chatId, message) {
+    try {
+        const payload = {
+            chat_id: chatId,
+            text: message,
+            parse_mode: 'MarkdownV2'
+        };
+
+        const response = await fetch(BOT_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (!result.ok) {
+            throw new Error(result.description || 'Unknown Telegram API error');
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('Error sending Telegram message with MarkdownV2:', error);
+        throw error;
+    }
+}
+
+
         // Send Telegram Message - IMPROVED
         async function sendTelegramMessage(chatId, message, useMarkdown = true) {
             try {
