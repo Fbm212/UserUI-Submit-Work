@@ -516,11 +516,17 @@ document.getElementById("continue-btn").addEventListener("click", function () {
       }
 
       // ✅ Google Sheets লিঙ্ক validation (required)
-    const sheetLinkRegex = /^https?:\/\/(docs\.google\.com\/spreadsheets\/.+)/;
+    /* const sheetLinkRegex = /^https?:\/\/(docs\.google\.com\/spreadsheets\/.+)/;
     if (!sheetLinkRegex.test(googleSheet)) {
         showAlert("Please enter a valid Google Sheet link.");
-        return;
-    }
+        return; 
+         } */
+
+    // ✅ শুধু basic URL format চেক করুন - ✅ Google Sheets লিঙ্ক validation (required)
+if (!googleSheet.startsWith('https://') && !googleSheet.startsWith('http://')) {
+    showAlert("Please enter a valid URL starting with http:// or https://");
+    return;
+}
 
       // ✅ 2FA/কুকি সিলেক্ট সমস্যা
       if (cookie2fa !== "2FA" && cookie2fa !== "Cookies") {
