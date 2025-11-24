@@ -1170,18 +1170,27 @@ async function sendTelegramToAdmin() {
 
 
 
-        // Send Telegram to User - WITH IMAGE & BUTTONS (Simple Version)
+        // Send Telegram to User - WITH IMAGE & BUTTONS (Spoiler Payment Methods)
 async function sendTelegramToUser() {
     try {
-        // 1. ইমেজ URL (আপনার ইমেজ দিয়ে রিপ্লেস করুন)
+        // 1. ইমেজ URL
         const imageUrl = "https://i.ibb.co/t5Q3JBF/Submite-Scc.jpg";
         
-        // 2. একই টেক্সট (নরমাল ভার্সন)
+        // 2. ট্রানজেকশন আইডি (এডমিন চ্যানেলের মতোই)
+        const transactionId = 'TX' + Date.now() + Math.random().toString(36).substr(2, 9);
+        
+        // 3. পেমেন্ট মেথড টেক্সট (Spoiler ফরম্যাটে)
+        const paymentMethodsText = savedPayments.map(p => 
+            `• ${p.method}: ||${p.number}||`
+        ).join('\n');
+
+        // 4. ক্যাপশন টেক্সট (Spoiler পেমেন্ট মেথড সহ)
         const captionText = `✅ *Submission Successful!*\n\n` +
                            `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
                            `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
-                           `*Payment Methods:* ${savedPayments.length}\n` +
-                           `*Transaction ID:* \`TX${Date.now()}\`\n` +
+                           `*Payment Methods:* ${savedPayments.length}\n\n` +
+                           `*Payment Details:*\n${paymentMethodsText}\n\n` +
+                           `*Transaction ID:* \`${transactionId}\`\n` +
                            `*Time:* ${new Date().toLocaleString("en-GB", { 
                                timeZone: "Asia/Dhaka",
                                day: "2-digit",
@@ -1194,7 +1203,7 @@ async function sendTelegramToUser() {
                            }).replace(",", "")}\n\n` +
                            `We will process your request within 24 hours.`;
 
-        // 3. দুইটা বাটন
+        // 5. দুইটা বাটন
         const inlineKeyboard = {
             inline_keyboard: [
                 [
@@ -1234,7 +1243,7 @@ async function sendTelegramToUser() {
         if (!result.ok) {
             console.log('Image send failed, sending text only...');
             // Fallback: শুধু টেক্সট মেসেজ
-            await sendTextMessageOnly();
+            await sendTextMessageOnly(transactionId);
         } else {
             console.log('User message with image & buttons sent successfully');
         }
@@ -1244,18 +1253,24 @@ async function sendTelegramToUser() {
     } catch (error) {
         console.error('Error sending Telegram to user:', error);
         // Fallback: শুধু টেক্সট মেসেজ
-        await sendTextMessageOnly();
+        const transactionId = 'TX' + Date.now() + Math.random().toString(36).substr(2, 9);
+        await sendTextMessageOnly(transactionId);
         return true;
     }
 }
 
 // Fallback: শুধু টেক্সট মেসেজ (যদি ইমেজ fails হয়)
-async function sendTextMessageOnly() {
+async function sendTextMessageOnly(transactionId) {
+    const paymentMethodsText = savedPayments.map(p => 
+        `• ${p.method}: ||${p.number}||`
+    ).join('\n');
+    
     const textMessage = `✅ *Submission Successful!*\n\n` +
                        `*Form Type:* ${formData?.accountType || 'N/A'}\n` +
                        `*Total IDs:* ${formData?.ttlId || 'N/A'}\n` +
-                       `*Payment Methods:* ${savedPayments.length}\n` +
-                       `*Transaction ID:* \`TX${Date.now()}\`\n` +
+                       `*Payment Methods:* ${savedPayments.length}\n\n` +
+                       `*Payment Details:*\n${paymentMethodsText}\n\n` +
+                       `*Transaction ID:* \`${transactionId}\`\n` +
                        `*Time:* ${new Date().toLocaleString("en-GB", { 
                            timeZone: "Asia/Dhaka",
                            day: "2-digit",
@@ -1270,7 +1285,6 @@ async function sendTextMessageOnly() {
     
     await sendTelegramMessage(userData.chatId, textMessage);
 }
-
         // Send Telegram Message - IMPROVED
         async function sendTelegramMessage(chatId, message, useMarkdown = true) {
             try {
