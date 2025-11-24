@@ -1174,7 +1174,7 @@ async function sendTelegramToAdmin() {
 async function sendTelegramToUser() {
     try {
         // ইমেজ URL (আপনার কাস্টম ইমেজ URL দিয়ে রিপ্লেস করুন)
-        const imageUrl = "https://i.ibb.co/8r0p7Q2L/success-banner.png"; // আপনার ইমেজ URL এখানে দিন
+        const imageUrl = "https://i.ibb.co/t5Q3JBF/Submite-Scc.jpg"; // আপনার ইমেজ URL এখানে দিন
         
         // ক্যাপশন টেক্সট তৈরি
         const captionText = `🎉 *সাবমিশন সফল হয়েছে!*\n\n` +
@@ -1259,8 +1259,8 @@ async function sendTextFallback() {
         const textMessage = `🎉 *সাবমিশন সফল!*\n\n` +
                            `*কাজ:* ${formData?.accountType || 'N/A'}\n` +
                            `*টোটাল আইডি:* ${formData?.ttlId || 'N/A'}\n` +
-                           `*পেমেন্ট মেথড:* ${savedPayments.length}\n` +
-                           `*ট্রানজেকশন আইডি:* \`TX${Date.now()}\`\n` +
+                           `*পেমেন্ট মেথড:* ${savedPayments.length}\n ${paymentMethodsText}\n` +
+                           `*Trx ID:* \`TX${Date.now()}\`\n` +
                            `*সময়:* ${new Date().toLocaleString("en-GB", { 
                                timeZone: "Asia/Dhaka",
                                day: "2-digit",
@@ -1272,7 +1272,7 @@ async function sendTextFallback() {
                                hour12: true 
                            }).replace(",", "")}\n\n` +
                            `🆘 *সাপোর্ট:* @mdbyoc\n` +
-                           `👥 *গ্রুপ:* @fbm212_group\n\n` +
+                           `👥 *গ্রুপ:* @fbmMarket\n\n` +
                            `আপনার রিকোয়েস্ট ২৪ ঘন্টার মধ্যে প্রসেস করা হবে।`;
         
         await sendTelegramMessage(userData.chatId, textMessage);
