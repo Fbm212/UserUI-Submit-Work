@@ -1222,7 +1222,7 @@
                                `*Total IDs:* ${escapeMarkdownV2(formData?.ttlId)}\n` +
                                `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
                                `*Payment Details:*\n${paymentMethodsText}\n\n` +
-                               `*Transaction ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
+                               `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
                                `*Time:* ${escapeMarkdownV2(new Date().toLocaleString("en-GB", { 
                                    timeZone: "Asia/Dhaka",
                                    day: "2-digit",
@@ -1299,9 +1299,9 @@
         const textMessage = `✅ *Submission Successful\\!*\n\n` +
                            `*Form Type:* ${escapeMarkdownV2(formData?.accountType)}\n` +
                            `*Total IDs:* ${escapeMarkdownV2(formData?.ttlId)}\n` +
-                           `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
+                           `*Payment Methods:* ${escapeMarkdownV2(sa nvedPayments.length.toString())}\n\n` +
                            `*Payment Details:*\n${paymentMethodsText}\n\n` +
-                           `*Transaction ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
+                           `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
                            `*Time:* ${escapeMarkdownV2(new Date().toLocaleString("en-GB", { 
                                timeZone: "Asia/Dhaka",
                                day: "2-digit",
