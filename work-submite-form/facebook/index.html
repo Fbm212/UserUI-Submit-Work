@@ -487,7 +487,17 @@ document.getElementById("continue-btn").addEventListener("click", function () {
     const ttlId = document.getElementById("ttl-id").value; 
     const tgUsername = document.getElementById("tg-username").value.trim();
     const tgChatId = document.getElementById("tg-chat-id").value; 
-    const googleSheet = document.getElementById("google-sheet").value.trim(); // ✅ type="text"
+    const googleSheet = document.getElementById("google-sheet").value.trim();
+
+
+  // ✅ অ্যাকাউন্ট টাইপের সাথে চ্যানেল আইডি ম্যাপিং
+    const accountChannels = {
+        "Facebook": "-1002654345940",
+        "Pc Clone 1000x UID FB": "-1002654345940", 
+        "Pc Clone 55-56x UID FB": "-1002654345940",
+        "M Pc Clone 1000x UID FB": "-1002314597186",
+        "Sc Pc Clone 1000x UID FB": "-1002654345940"
+    };
 
       // শুধুমাত্র @ চেক করা
       if (!tgUsername.startsWith("@")) {
@@ -543,7 +553,7 @@ if (!googleSheet.startsWith('https://') && !googleSheet.startsWith('http://')) {
       // ✅ সমস্ত ডেটা সংগ্রহ করে পরের পেইজে রিডাইরেক্ট
       const nextPageUrl = "https://fbm212.github.io/UserUI-Submit-Work/work-submite-form/facebook/payment.html";
 
-      // ✅ সমস্ত ডেটা প্রস্তুত করুন
+       // ✅ সমস্ত ডেটা সংগ্রহ করে পরের পেইজে রিডাইরেক্ট
     const formData = {
         // টেলিগ্রাম থেকে প্রাপ্ত ইউজার ডেটা
         telegramUserId: window.userData?.id || '',
@@ -561,7 +571,8 @@ if (!googleSheet.startsWith('https://') && !googleSheet.startsWith('http://')) {
         ttlId: ttlId,
         tgUsername: tgUsername,
         tgChatId: tgChatId,
-        googleSheet: googleSheet, // ✅ সরাসরি text হিসেবে
+        googleSheet: googleSheet,
+        channelId: accountChannels[accountType], // 🟢 এই লাইনটি আপডেট হয়েছে
         submissionTime: new Date().toLocaleString("en-GB", { 
             timeZone: "Asia/Dhaka", 
             day: "2-digit", 
@@ -573,7 +584,7 @@ if (!googleSheet.startsWith('https://') && !googleSheet.startsWith('http://')) {
             hour12: true 
         }).replace(",", "")
     };
-
+  
     // ডেটা URL প্যারামিটারে কনভার্ট করুন
     const encodedData = encodeURIComponent(JSON.stringify(formData));
     
