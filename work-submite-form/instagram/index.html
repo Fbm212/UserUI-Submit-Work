@@ -513,455 +513,817 @@
     </div>
   </div>
 
-  <script>
-    // ফাইলকে Base64 তে কনভার্ট করার ফাংশন
-    function toBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-      });
-    }
+ <script>
+    // Telegram Bot Configuration
+    const BOT_TOKEN = "8377520270:AAHL1MrNxIwgrRQAk_lDWJrEs78wu76Dnh0";
+    const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-    // ফাইল সাইজ ফরম্যাট করার ফাংশন
-    function formatFileSize(bytes) {
-      if (bytes === 0) return '0 Bytes';
-      const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
+    // Telegram Web App
+    const tg = window.Telegram.WebApp;
+    let userData = null;
+    let formData = null;
 
-    // ফাইল রিমুভ করার ফাংশন - সম্পূর্ণ আপডেট করা হয়েছে
-    function removeFile() {
-      const fileInput = document.getElementById('file-upload');
-      const fileInfo = document.getElementById('file-info');
-      const uploadArea = document.getElementById('upload-area');
-      
-      // 1. ফাইল ইনপুট ভ্যালু ক্লিয়ার
-      fileInput.value = '';
-      
-      // 2. ফাইল ইনফো লুকানো
-      fileInfo.classList.remove('show');
-      
-      // 3. আপলোড এরিয়া দেখানো
-      uploadArea.classList.remove('hidden');
-      
-      // 4. ফাইল ইনপুটের onclick ইভেন্ট রিমুভ (প্রম্পট আসবে না)
-      fileInput.onclick = function(e) {
-        e.stopPropagation();
-        return true;
-      };
-    }
+    // Payment Methods Configuration with Logos
+    const paymentMethods = {
+        Bkash: { 
+            pattern: "^01[3-9][0-9]{8}$", 
+            placeholder: "01XXXXXXXXX", 
+            label: "Bkash Number",
+            logo: "https://i.ibb.co/jPr3zzT5/bKash.png"
+        },
+        Nagad: { 
+            pattern: "^01[3-9][0-9]{8}$", 
+            placeholder: "01XXXXXXXXX", 
+            label: "Nagad Number",
+            logo: "https://i.ibb.co/ZzfbKbrz/nagad.png"
+        },
+        Rocket: { 
+            pattern: "^01[3-9][0-9]{8}$", 
+            placeholder: "01XXXXXXXXX", 
+            label: "Rocket Number",
+            logo: "https://i.ibb.co/0pGsRX5m/rocket.png"
+        },
+        Cellfin: { 
+            pattern: "^01[3-9][0-9]{8}$", 
+            placeholder: "01XXXXXXXXX", 
+            label: "Cellfin Number",
+            logo: "https://i.ibb.co/gMbb1SkL/cellfinlogo.png"
+        }, 
+        Binance: { 
+            pattern: "^\\d{6,11}$", 
+            placeholder: "ID1042457700", 
+            label: "Binance ID",
+            logo: "https://i.ibb.co/FbzYZPst/binance.png"
+        },
+        Payeer: { 
+            pattern: "^P\\d{7,10}$", 
+            placeholder: "P1127766562", 
+            label: "Payeer ID",
+            logo: "https://i.ibb.co/38hcZcS/payeer.png"
+        }
+    };
 
-    // URL থেকে ইউজার ডেটা পড়ার ফাংশন (থিম সহ)
-    function getUserFromURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const userStr = urlParams.get("user");
-      
-      if (!userStr) {
-        console.log("No user data found in URL");
-        return null;
-      }
-      
-      try {
-        const userData = JSON.parse(decodeURIComponent(userStr));
+    let savedPayments = [];
+    let selectedPaymentMethod = null;
+
+    // Generate 10-character Transaction ID
+    function generateTransactionId() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let transactionId = '';
         
-        // থিম অটো অ্যাপ্লাই করুন
-        if (userData.theme === 'dark') {
-          document.body.classList.add('dark-mode');
-        } else {
-          document.body.classList.remove('dark-mode');
+        for (let i = 0; i < 10; i++) {
+            transactionId += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         
-        return userData;
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-        return null;
-      }
+        return transactionId;
     }
 
-    // DOM লোড হলে ইউজার ডেটা অটো-ফিল করুন
+    // MarkdownV2 Escape Function
+    function escapeMarkdownV2(text) {
+        if (!text) return 'N/A';
+        return text.toString()
+            .replace(/\_/g, '\\_')
+            .replace(/\*/g, '\\*')
+            .replace(/\[/g, '\\[')
+            .replace(/\]/g, '\\]')
+            .replace(/\(/g, '\\(')
+            .replace(/\)/g, '\\)')
+            .replace(/\~/g, '\\~')
+            .replace(/\`/g, '\\`')
+            .replace(/\>/g, '\\>')
+            .replace(/\#/g, '\\#')
+            .replace(/\+/g, '\\+')
+            .replace(/\-/g, '\\-')
+            .replace(/\=/g, '\\=')
+            .replace(/\|/g, '\\|')
+            .replace(/\{/g, '\\{')
+            .replace(/\}/g, '\\}')
+            .replace(/\./g, '\\.')
+            .replace(/\!/g, '\\!');
+    }
+
+    // Initialize Application
     document.addEventListener('DOMContentLoaded', function() {
-      const user = getUserFromURL();
-      
-      if (user) {
-        document.getElementById('tg-username').value = user.username ? '@' + user.username : '';
-        document.getElementById('tg-chat-id').value = user.id || '';
-        window.userData = user;
-      } else {
-        document.getElementById('tg-username').value = '@username';
-        document.getElementById('tg-chat-id').value = '';
-      }
-
-      // ফাইল আপলোড ইভেন্ট লিস্টেনার
-      const fileInput = document.getElementById('file-upload');
-      const fileInfo = document.getElementById('file-info');
-      const fileName = document.getElementById('file-name');
-      const fileSize = document.getElementById('file-size');
-      const uploadArea = document.getElementById('upload-area');
-
-      // ফাইল ইনপুটে onclick ইভেন্ট সেট
-      fileInput.onclick = function(e) {
-        e.stopPropagation();
-      };
-
-      // ফাইল ইনপুট change ইভেন্ট
-      fileInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-          const file = this.files[0];
-          fileName.textContent = file.name;
-          fileSize.textContent = ' (' + formatFileSize(file.size) + ')';
-          fileInfo.classList.add('show');
-          uploadArea.classList.add('hidden');
-        }
-      });
-
-      // আপলোড এরিয়ায় ক্লিক করলে ফাইল ইনপুট ট্রিগার
-      uploadArea.addEventListener('click', function() {
-        fileInput.click();
-      });
-
-      // ড্রাগ অ্যান্ড ড্রপ ফাংশনালিটি
-      uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.style.borderColor = 'var(--primary)';
-        this.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
-      });
-
-      uploadArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        this.style.borderColor = 'var(--border-color)';
-        this.style.backgroundColor = 'var(--input-bg)';
-      });
-
-      uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.style.borderColor = 'var(--border-color)';
-        this.style.backgroundColor = 'var(--input-bg)';
-        
-        if (e.dataTransfer.files.length) {
-          fileInput.files = e.dataTransfer.files;
-          const event = new Event('change', { bubbles: true });
-          fileInput.dispatchEvent(event);
-        }
-      });
+        initializeApp();
     });
 
-    // কাস্টম এলার্ট ফাংশন
-    function showAlert(message) {
-      const alertBox = document.getElementById("custom-alert");
-      const alertMessage = document.getElementById("alert-message");
-      
-      alertMessage.textContent = message;
-      alertBox.style.display = "flex";
-    }
-
-    document.getElementById("alert-ok").addEventListener("click", function () {
-      document.getElementById("custom-alert").style.display = "none";
-    });
-
-    // বর্ধিত এরর হ্যান্ডলিং সহ সুইট অ্যালার্ট
-    function showErrorAlert(message) {
-      const alertBox = document.getElementById("custom-alert");
-      const alertMessage = document.getElementById("alert-message");
-      
-      const fullMessage = message + "\n\nPlease try again.\nIf problem persists, contact admin.";
-      
-      alertMessage.textContent = fullMessage;
-      alertBox.style.display = "flex";
-      
-      // OK বাটনে ইভেন্ট লিস্টার
-      const okButton = document.getElementById("alert-ok");
-      const newHandler = function() {
-        alertBox.style.display = "none";
-        location.reload();
-      };
-      
-      // পুরানো ইভেন্ট লিস্টার রিমুভ করে নতুন যোগ
-      okButton.replaceWith(okButton.cloneNode(true));
-      document.getElementById("alert-ok").addEventListener("click", newHandler);
-    }
-
-    // গো ব্যাক ফাংশন
-    function goBack() {
-      window.history.back();
-    }
-
-    // ফর্ম ভ্যালিডেশন
-    document.getElementById("account-type").addEventListener("change", function () { 
-      const accountType = this.value.toLowerCase(); 
-      const mailBox = document.getElementById("mail-box"); 
-      const cookie2fa = document.getElementById("2fa-cookie"); 
-      const fdType = document.getElementById("fd-type");
-
-      mailBox.disabled = false;
-      mailBox.required = true;
-      cookie2fa.disabled = false;
-      cookie2fa.required = true;
-      fdType.disabled = false;
-      fdType.required = true;
-
-      if (cookie2fa.value === "Cookies") {
-        fdType.disabled = true;
-        fdType.value = "";
-      } else {
-        fdType.disabled = false;
-      }
-    });
-
-    document.getElementById("2fa-cookie").addEventListener("change", function () { 
-      const fdType = document.getElementById("fd-type"); 
-      if (this.value === "Cookies") { 
-        fdType.disabled = true; 
-        fdType.value = ""; 
-      } else { 
-        fdType.disabled = false; 
-      }
-    });
-
-    // SpFile থেকে স্পেশাল ইউজার আইডি লোড করার ফাংশন
-    async function loadSpecialUserIds() {
-      try {
-        const response = await fetch('https://fbm212.github.io/UserUI-Submit-Work/Admin-List/spfile.json');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+    // Initialize App with Telegram User Data and Form Data
+    function initializeApp() {
+        // Telegram WebApp Expansion
+        if (tg && tg.expand) {
+            tg.expand();
         }
         
-        const data = await response.json();
+        // Get Form Data
+        loadFormData();
         
-        if (!data || !Array.isArray(data.special_users)) {
-          throw new Error("Invalid SpFile JSON format");
+        // Get Telegram User Data
+        let tgUser = null;
+        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            tgUser = tg.initDataUnsafe.user;
         }
         
-        return data.special_users;
-        
-      } catch (error) {
-        console.error("SpFile লোড করতে সমস্যা:", error);
-        throw new Error("SpFile system load failed. Please try again or contact admin.");
-      }
-    }
-
-    // ইউজার SpFile-এ আছে কিনা চেক করার ফাংশন
-    function isSpecialUser(userId, specialUsersList) {
-      if (!Array.isArray(specialUsersList)) {
-        return false;
-      }
-      
-      // ইউজার আইডিকে স্ট্রিং হিসেবে চেক করা
-      const userIdStr = userId.toString();
-      return specialUsersList.includes(userIdStr);
-    }
-
-    // চ্যানেল আইডি ম্যাপিং
-    const NORMAL_CHANNELS = {
-      "Normal File": "-1002654345940",
-      "Number 2Fa File": "-1002281630040",
-      "rPc 1k Friends File": "-1002459414820",
-      "Trusted Mail File": "-1003170929442",
-      "rPc 1000s UID": "-1002372301785", 
-      "rPc 55-56s UID": "-1002585110664",
-      "mPc 1000s UID": "-1002636197141",
-      "Sm Pc 1000s UID": "-1003098627237",
-      "Sc Pc 1000s UID": "-1002314597186",
-      "mSc Pc 1000s UID": "-1002372301785",
-      "2Fa Pc 1000s UID": "-1002635815704"
-    };
-
-    const SPFILE_CHANNELS = {
-      "Normal File": "-1002698350138",
-      "Number 2Fa File": "-1002698350138",
-      "Trusted Mail File": "-1002698350138",
-      "rPc 1000s UID": "-1002698350138",
-      "rPc 55-56s UID": "-1002698350138",
-      "rPc 1k Friends File": "-1002698350138",
-      "mPc 1000s UID": "-1002698350138",
-      "Sm Pc 1000s UID": "-1002698350138",
-      "Sc Pc 1000s UID": "-1002698350138",
-      "mSc Pc 1000s UID": "-1002698350138",
-      "2Fa Pc 1000s UID": "-1002698350138 "
-    };
-
-    // Continue বাটন ক্লিক হ্যান্ডলার
-    document.getElementById("continue-btn").addEventListener("click", async function () { 
-      const continueBtn = this;
-      const originalText = continueBtn.innerHTML;
-      
-      try {
-        // লোডিং স্টেট সেট করা
-        continueBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
-        continueBtn.disabled = true;
-        
-        // ফর্ম ডেটা সংগ্রহ
-        const accountType = document.getElementById("account-type").value; 
-        const mailBox = document.getElementById("mail-box").value || " "; 
-        const cookie2fa = document.getElementById("2fa-cookie").value.trim();
-        const fdType = document.getElementById("fd-type").value || " "; 
-        const ttlId = document.getElementById("ttl-id").value; 
-        const tgUsername = document.getElementById("tg-username").value.trim();
-        const tgChatId = document.getElementById("tg-chat-id").value; 
-        
-        // ফাইল আপলোড হ্যান্ডেলিং
-        const fileInput = document.getElementById("file-upload");
-        const uploadedFile = fileInput.files[0];
-        
-        // ভ্যালিডেশন
-        if (!tgUsername.startsWith("@")) {
-          showAlert("Username must start with '@'.");
-          continueBtn.innerHTML = originalText;
-          continueBtn.disabled = false;
-          return;
+        // Fallback for testing outside Telegram
+        if (!tgUser) {
+            tgUser = {
+                id: formData?.telegramUserId || "123456789",
+                username: formData?.telegramUsername || "test_user",
+                first_name: formData?.telegramFirstName || "Test",
+                last_name: formData?.telegramLastName || "User",
+                photo_url: formData?.telegramPhotoUrl || "",
+                language_code: "en"
+            };
+            console.log('Demo Mode: Running without Telegram WebApp');
         }
+        
+        // Store user data
+        userData = {
+            chatId: tgUser.id.toString(),
+            username: tgUser.username || `user_${tgUser.id}`,
+            firstName: tgUser.first_name || '',
+            lastName: tgUser.last_name || '',
+            photoUrl: tgUser.photo_url || '',
+            languageCode: tgUser.language_code || 'en',
+            isPremium: tgUser.is_premium || false
+        };
+        
+        console.log('User Data Loaded:', {
+            chatId: userData.chatId,
+            username: userData.username,
+            name: `${userData.firstName} ${userData.lastName}`.trim()
+        });
 
-        const requiredFields = [
-          { value: accountType, name: "Account Type" },
-          { value: cookie2fa, name: "2FA/Cookies" },
-          { value: ttlId, name: "Total Id" },
-          { value: tgUsername, name: "Telegram Username" },
-          { value: tgChatId, name: "Telegram Chat Id" },
-          { value: uploadedFile, name: "Excel File" }
-        ];
+        console.log('Form Data Loaded:', formData);
+        
+        // Update header
+        updateUserGreeting();
+        
+        loadPaymentMethods();
+        setupEventListeners();
+        setupKeyboardNavigation();
+    }
 
-        for (const field of requiredFields) {
-          if (!field.value || field.value === "Select") {
-            showAlert(`Please fill out the ${field.name}.`);
-            continueBtn.innerHTML = originalText;
-            continueBtn.disabled = false;
+    // Load Form Data - আপডেট করা হয়েছে
+    function loadFormData() {
+        // 1. প্রথমে localStorage থেকে ডেটা লোড করুন
+        const storedData = localStorage.getItem('formSubmissionData');
+        if (storedData) {
+            try {
+                formData = JSON.parse(storedData);
+                console.log("✅ Form data loaded from localStorage:", formData);
+                
+                // Clean up - ডেটা লোড হওয়ার পর মুছে দিন
+                localStorage.removeItem('formSubmissionData');
+                
+                // Apply theme
+                if (formData.theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+                
+                return;
+            } catch (error) {
+                console.error("❌ Error parsing localStorage data:", error);
+            }
+        }
+        
+        // 2. যদি localStorage এ না থাকে, URL থেকে চেষ্টা করুন
+        const urlParams = new URLSearchParams(window.location.search);
+        const formDataStr = urlParams.get("formData");
+        
+        if (!formDataStr) {
+            console.log("⚠️ No form data found");
+            showAlert('Error', 'Form data not found. Please go back and try again.', 'error');
+            formData = null;
             return;
-          }
         }
-        
-        // ফাইল ভ্যালিডেশন
-        if (!uploadedFile.name.toLowerCase().endsWith('.xlsx') && !uploadedFile.name.toLowerCase().endsWith('.xls')) {
-          showAlert("Only .xlsx or .xls files are allowed.");
-          continueBtn.innerHTML = originalText;
-          continueBtn.disabled = false;
-          return;
-        }
-        
-        // ফাইল সাইজ চেক (10MB পর্যন্ত)
-        const maxSize = 10 * 1024 * 1024; // 10MB
-        if (uploadedFile.size > maxSize) {
-          showAlert("File size must be less than 10MB.");
-          continueBtn.innerHTML = originalText;
-          continueBtn.disabled = false;
-          return;
-        }
-
-        if (!/^\d{1,4}$/.test(ttlId)) {
-          showAlert("Total Id must be between 1 and 4 digits.");
-          continueBtn.innerHTML = originalText;
-          continueBtn.disabled = false;
-          return;
-        }
-
-        if (!/^\d{9,10}$/.test(tgChatId)) {
-          showAlert("Telegram Chat Id must be 9 or 10 digits.");
-          continueBtn.innerHTML = originalText;
-          continueBtn.disabled = false;
-          return;
-        }
-
-        if (cookie2fa !== "2FA" && cookie2fa !== "Cookies") {
-          showAlert("Please select 2FA or Cookies correctly.");
-          continueBtn.innerHTML = originalText;
-          continueBtn.disabled = false;
-          return;
-        }
-
-        // SpFile সিস্টেম চেক
-        let isSpecialUserFlag = false;
-        let finalChannelId = null;
         
         try {
-          const specialUsersList = await loadSpecialUserIds();
-          isSpecialUserFlag = isSpecialUser(tgChatId, specialUsersList);
-          
-          if (isSpecialUserFlag) {
-            finalChannelId = SPFILE_CHANNELS[accountType];
-            
-            if (!finalChannelId) {
-              showErrorAlert(`SpFile channel ID not found for "${accountType}" type`);
-              continueBtn.innerHTML = originalText;
-              continueBtn.disabled = false;
-              return;
+            // Try base64 decode first
+            try {
+                formData = JSON.parse(atob(formDataStr));
+            } catch (base64Error) {
+                // If base64 fails, try URL decode
+                formData = JSON.parse(decodeURIComponent(formDataStr));
             }
-          } else {
-            finalChannelId = NORMAL_CHANNELS[accountType];
             
-            if (!finalChannelId) {
-              showErrorAlert(`Normal channel ID not found for "${accountType}" type`);
-              continueBtn.innerHTML = originalText;
-              continueBtn.disabled = false;
-              return;
+            console.log("✅ Form data loaded from URL:", formData);
+            
+            // Apply theme
+            if (formData.theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
             }
-          }
-          
-        } catch (spFileError) {
-          console.error("SpFile system error:", spFileError);
-          showErrorAlert(spFileError.message);
-          continueBtn.innerHTML = originalText;
-          continueBtn.disabled = false;
-          return;
+            
+        } catch (error) {
+            console.error("❌ Error parsing form data:", error);
+            formData = null;
+            
+            // User-friendly error message
+            showAlert('Data Error', 'Unable to load form data. Please go back and try again.', 'error');
+        }
+    }
+
+    // Update header greeting
+    function updateUserGreeting() {
+        const userFullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User';
+        const userFullNameElement = document.getElementById('userFullName');
+        userFullNameElement.textContent = userFullName;
+    }
+
+    // Load Payment Methods in 3 Column Grid
+    function loadPaymentMethods() {
+        const container = document.getElementById('paymentMethodsGrid');
+        container.innerHTML = '';
+        
+        Object.keys(paymentMethods).forEach(method => {
+            const payment = paymentMethods[method];
+            const card = document.createElement('div');
+            card.className = 'payment-method-card';
+            card.setAttribute('role', 'button');
+            card.setAttribute('aria-label', `Select ${method} payment method`);
+            card.innerHTML = `
+                <div class="payment-logo" style="background-image: url(${payment.logo})" aria-hidden="true"></div>
+                <div class="payment-method-name">${method}</div>
+            `;
+            
+            card.addEventListener('click', () => selectPaymentMethod(method, card));
+            container.appendChild(card);
+        });
+    }
+
+    // Select Payment Method
+    function selectPaymentMethod(method, card) {
+        document.querySelectorAll('.payment-method-card').forEach(el => {
+            el.classList.remove('selected');
+        });
+        
+        card.classList.add('selected');
+        
+        selectedPaymentMethod = method;
+        const input = document.getElementById('paymentNumberInput');
+        input.placeholder = paymentMethods[method].placeholder;
+        input.value = '';
+        input.setAttribute('aria-label', paymentMethods[method].label);
+        
+        input.classList.remove('valid', 'invalid');
+        
+        validatePaymentForm();
+    }
+
+    // Setup Event Listeners
+    function setupEventListeners() {
+        document.getElementById('addPaymentBtn').addEventListener('click', addPaymentMethod);
+        document.getElementById('paymentNumberInput').addEventListener('input', validatePaymentInput);
+        document.getElementById('confirmWithdrawBtn').addEventListener('click', showConfirmationModal);
+        document.getElementById('backBtnBottom').addEventListener('click', goBack);
+    }
+
+    // Setup Keyboard Navigation
+    function setupKeyboardNavigation() {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                goBack();
+            }
+            if (e.key === 'Enter' && validatePaymentForm()) {
+                addPaymentMethod();
+            }
+        });
+    }
+
+    // Go Back Function
+    function goBack() {
+        Swal.fire({
+            title: 'Go Back?',
+            text: 'Are you sure you want to go back? Your form data will be preserved.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Go Back!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // ফর্ম ডেটা নিয়ে ফিরে যান
+                if (formData) {
+                    localStorage.setItem('formSubmissionData', JSON.stringify(formData));
+                }
+                window.history.back();
+            }
+        });
+    }
+
+    // Show Confirmation Modal
+    function showConfirmationModal() {
+        if (savedPayments.length === 0) {
+            showAlert('Required', 'Please add at least one payment method', 'error');
+            return;
+        }
+        
+        const paymentMethodsText = savedPayments.map(p => 
+            `• ${p.method}: ${p.number}`
+        ).join('\n');
+        
+        Swal.fire({
+            title: 'Confirm Submission?',
+            html: `<div style="text-align: left;">
+                   <p><strong>Payment Methods:</strong></p>
+                   <pre style="background: var(--bg); padding: 10px; border-radius: 8px; font-size: 0.9rem; margin: 10px 0; white-space: pre-wrap;">${paymentMethodsText}</pre>
+                   <p style="margin-top: 10px;">Are you sure you want to submit?</p>
+                 </div>`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Submit!',
+            cancelButtonText: 'Review',
+            backdrop: true,
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                confirmWithdrawal();
+            }
+        });
+    }
+
+    // Add Payment Method
+    function addPaymentMethod() {
+        const number = document.getElementById('paymentNumberInput').value.trim();
+
+        if (!selectedPaymentMethod) {
+            showAlert('Required', 'Please select payment method first', 'error');
+            return;
         }
 
-        // ফাইল ডেটা প্রস্তুত
-        const fileData = {
-          fileName: uploadedFile.name,
-          fileSize: uploadedFile.size,
-          fileType: uploadedFile.type,
-          fileContent: await toBase64(uploadedFile)
-        };
+        if (!number) {
+            showAlert('Required', 'Please enter payment number', 'error');
+            return;
+        }
 
-        // সমস্ত ডেটা সংগ্রহ করে পরের পেইজে রিডাইরেক্ট
-        const nextPageUrl = "https://fbm212.github.io/UserUI-Submit-Work/Payment-Methods/TestingPayment.html";
+        const regex = new RegExp(paymentMethods[selectedPaymentMethod].pattern);
+        if (!regex.test(number)) {
+            showAlert('Invalid', `Please enter valid ${paymentMethods[selectedPaymentMethod].label}`, 'warning');
+            return;
+        }
 
-        const formData = {
-          telegramUserId: window.userData?.id || '',
-          telegramUsername: window.userData?.username || '',
-          telegramFirstName: window.userData?.first_name || '',
-          telegramLastName: window.userData?.last_name || '',
-          telegramPhotoUrl: window.userData?.photo_url || '',
-          theme: window.userData?.theme || 'light',
-          
-          accountType: accountType,
-          mailBox: mailBox,
-          cookie2fa: cookie2fa,
-          fdType: fdType,
-          ttlId: ttlId,
-          tgUsername: tgUsername,
-          tgChatId: tgChatId,
-          
-          uploadedFile: fileData,
-          
-          channelId: finalChannelId,
-          isSpecialUser: isSpecialUserFlag,
-          userType: isSpecialUserFlag ? "special" : "normal",
-          
-          submissionTime: new Date().toLocaleString("en-GB", { 
-            timeZone: "Asia/Dhaka", 
-            day: "2-digit", 
-            month: "2-digit", 
-            year: "numeric",
-            hour: "2-digit", 
-            minute: "2-digit", 
-            second: "2-digit",
-            hour12: true 
-          }).replace(",", "")
+        const normalizedNumber = number.toLowerCase().trim();
+        if (savedPayments.some(p => 
+            p.method === selectedPaymentMethod && 
+            p.number.toLowerCase().trim() === normalizedNumber
+        )) {
+            showAlert('Duplicate', 'This payment method is already added', 'warning');
+            return;
+        }
+
+        savedPayments.push({ 
+            method: selectedPaymentMethod, 
+            number: number,
+            logo: paymentMethods[selectedPaymentMethod].logo
+        });
+        renderSavedPayments();
+        
+        document.getElementById('paymentNumberInput').value = '';
+        document.getElementById('paymentNumberInput').classList.remove('valid');
+        
+        document.getElementById('confirmWithdrawBtn').disabled = savedPayments.length === 0;
+        
+        showAlert('Success', 'Payment method added successfully', 'success');
+    }
+
+    // Render Saved Payments
+    function renderSavedPayments() {
+        const container = document.getElementById('savedPayments');
+        container.innerHTML = '';
+        
+        if (savedPayments.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 30px; color: var(--text-light);">
+                    <i class="fas fa-wallet" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <p>No payment methods added yet</p>
+                    <p style="font-size: 0.8rem; margin-top: 5px;">Select a method above and add your details</p>
+                </div>
+            `;
+            return;
+        }
+
+        savedPayments.forEach((payment, index) => {
+            const paymentEl = document.createElement('div');
+            paymentEl.className = 'saved-payment-item';
+            paymentEl.innerHTML = `
+                <div class="saved-payment-info">
+                    <div class="saved-payment-logo" style="background-image: url(${payment.logo})"></div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.9rem;">${payment.method}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-light);">${payment.number}</div>
+                    </div>
+                </div>
+                <button class="delete-payment-btn" data-index="${index}" aria-label="Delete ${payment.method} payment method">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(paymentEl);
+        });
+
+        document.querySelectorAll('.delete-payment-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = parseInt(this.getAttribute('data-index'));
+                deletePayment(index);
+            });
+        });
+    }
+
+    // Delete Payment
+    function deletePayment(index) {
+        if (index >= 0 && index < savedPayments.length) {
+            savedPayments.splice(index, 1);
+            renderSavedPayments();
+            document.getElementById('confirmWithdrawBtn').disabled = savedPayments.length === 0;
+            showAlert('Removed', 'Payment method deleted', 'success');
+        }
+    }
+
+    // Validate Payment Input
+    function validatePaymentInput() {
+        const input = document.getElementById('paymentNumberInput');
+        const method = selectedPaymentMethod;
+        const value = input.value.trim();
+        
+        if (method && value) {
+            const regex = new RegExp(paymentMethods[method].pattern);
+            const isValid = regex.test(value);
+            
+            input.classList.remove('valid', 'invalid');
+            input.classList.add(isValid ? 'valid' : 'invalid');
+            
+            return isValid;
+        }
+        
+        input.classList.remove('valid', 'invalid');
+        return false;
+    }
+
+    // Validate Payment Form
+    function validatePaymentForm() {
+        const number = document.getElementById('paymentNumberInput').value.trim();
+        const method = selectedPaymentMethod;
+        
+        if (method && number) {
+            const regex = new RegExp(paymentMethods[method].pattern);
+            return regex.test(number);
+        }
+        return false;
+    }
+
+    // Confirm Withdrawal
+    async function confirmWithdrawal() {
+        if (savedPayments.length === 0) {
+            showAlert('Required', 'Please add at least one payment method', 'error');
+            return;
+        }
+        
+        const confirmBtn = document.getElementById('confirmWithdrawBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.classList.add('loading');
+        
+        try {
+            const transactionId = generateTransactionId();
+            
+            const adminSuccess = await sendTelegramToAdmin(transactionId);
+            
+            if (adminSuccess) {
+                await sendTelegramToUser(transactionId);
+                redirectToSuccessPage(transactionId);
+            } else {
+                throw new Error('Failed to send submission');
+            }
+            
+        } catch (error) {
+            console.error('Error in confirmation process:', error);
+            
+            showAlert('Submission Failed', `Error: ${error.message}`, 'error');
+            
+            confirmBtn.disabled = false;
+            confirmBtn.classList.remove('loading');
+        }
+    }
+
+    // Send Telegram to Admin Channel
+    async function sendTelegramToAdmin(transactionId) {
+        try {
+            const submissionData = {
+                user: userData,
+                form: formData,
+                paymentMethods: savedPayments,
+                submissionTime: new Date().toLocaleString("en-GB", { 
+                    timeZone: "Asia/Dhaka",
+                    day: "2-digit",
+                    month: "2-digit", 
+                    year: "numeric",
+                    hour: "2-digit", 
+                    minute: "2-digit", 
+                    second: "2-digit",
+                    hour12: true 
+                }).replace(",", ""),
+                transactionId: transactionId
+            };
+
+            console.log('Sending Telegram to admin channel...');
+
+            const paymentMethodsText = savedPayments.map(p => 
+                `▫️ *${p.method}:* \`${p.number}\``
+            ).join('\n');
+
+            const fileInfo = formData?.uploadedFile ? 
+                `• File Name: ${formData.uploadedFile.fileName}\n` +
+                `• File Size: ${(formData.uploadedFile.fileSize / 1024 / 1024).toFixed(2)} MB\n` +
+                `• File Type: ${formData.uploadedFile.fileType}` : 
+                '• File: Not uploaded';
+
+            const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
+                        `👤 *User Information:*\n` +
+                        `• Name: ${userData.firstName} ${userData.lastName}\n` +
+                        `• Username: @${userData.username.replace(/_/g, '\\_')}\n` +
+                        `• User ID: \`${userData.chatId}\`\n\n` +
+                        `📋 *Form Details:*\n` +
+                        `• Account Type: ${formData?.accountType || 'N/A'}\n` +
+                        `• Mail Type: ${formData?.mailBox || 'N/A'}\n` +
+                        `• 2FA/Cookie: ${formData?.cookie2fa || 'N/A'}\n` +
+                        `• Friends: ${formData?.fdType || 'N/A'}\n` +
+                        `• Total IDs: ${formData?.ttlId || 'N/A'}\n` +
+                        `• User Type: ${formData?.userType || 'Normal'}\n` +
+                        `${fileInfo}\n\n` +
+                        `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
+                        `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
+                        `🔢 *Transaction ID:* \`${transactionId}\``;
+
+            const targetChannelId = formData?.channelId || "-1002654345940";
+
+            console.log('Target Channel ID:', targetChannelId);
+
+            try {
+                await sendTelegramMessage(targetChannelId, adminMessage, true);
+                console.log('Admin channel message sent successfully to:', targetChannelId);
+                return true;
+            } catch (markdownError) {
+                console.log('Markdown failed, trying plain text...');
+                
+                try {
+                    const plainAdminMessage = adminMessage
+                        .replace(/\*/g, '')
+                        .replace(/`/g, '')
+                        .replace(/_/g, '');
+                    
+                    await sendTelegramMessage(targetChannelId, plainAdminMessage, false);
+                    console.log('Admin channel message sent successfully with plain text to:', targetChannelId);
+                    return true;
+                } catch (plainError) {
+                    console.log('Plain text also failed, trying basic text...');
+                    
+                    const basicAdminMessage = `NEW FORM SUBMISSION\n\nUser: ${userData.firstName} ${userData.lastName} (@${userData.username})\nForm: ${formData?.accountType || 'N/A'}\nFile: ${formData?.uploadedFile?.fileName || 'N/A'}\nPayment Methods: ${savedPayments.length}\nTime: ${submissionData.submissionTime}\nTransaction ID: ${transactionId}`;
+                    
+                    await sendTelegramMessage(targetChannelId, basicAdminMessage, false);
+                    console.log('Admin channel message sent successfully with basic text to:', targetChannelId);
+                    return true;
+                }
+            }
+
+        } catch (error) {
+            console.error('Error sending Telegram to admin:', error);
+            return false;
+        }
+    }
+
+    // Send Telegram to User
+    async function sendTelegramToUser(transactionId) {
+        try {
+            const imageUrl = "https://i.ibb.co/t5Q3JBF/Submite-Scc.jpg";
+            
+            const paymentMethodsText = savedPayments.map(p => 
+                `• ${escapeMarkdownV2(p.method)}: ||${escapeMarkdownV2(p.number)}||`
+            ).join('\n');
+
+            const fileInfo = formData?.uploadedFile ? 
+                `*File:* ${escapeMarkdownV2(formData.uploadedFile.fileName)}\n` +
+                `*Size:* ${escapeMarkdownV2((formData.uploadedFile.fileSize / 1024 / 1024).toFixed(2) + ' MB')}\n` : 
+                '';
+
+            const captionText = `✅ *Submission Successful\\!*\n\n` +
+                               `*Form Type:* ${escapeMarkdownV2(formData?.accountType)}\n` +
+                               `*Total IDs:* ${escapeMarkdownV2(formData?.ttlId)}\n` +
+                               `${fileInfo}` +
+                               `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
+                               `*Payment Details:*\n${paymentMethodsText}\n\n` +
+                               `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
+                               `*Time:* ${escapeMarkdownV2(new Date().toLocaleString("en-GB", { 
+                                   timeZone: "Asia/Dhaka",
+                                   day: "2-digit",
+                                   month: "2-digit", 
+                                   year: "numeric",
+                                   hour: "2-digit", 
+                                   minute: "2-digit", 
+                                   second: "2-digit",
+                                   hour12: true 
+                               }).replace(",", ""))}\n\n` +
+                               `We will process your request within 24 hours\\.`;
+
+            const inlineKeyboard = {
+                inline_keyboard: [
+                    [
+                        {
+                            text: "🆘 Need Help",
+                            url: "https://t.me/mdbyoc"
+                        },
+                        {
+                            text: "👥 Join Group", 
+                            url: "https://t.me/FbmMarket"
+                        }
+                    ]
+                ]
+            };
+
+            const sendPhotoUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+            
+            const payload = {
+                chat_id: userData.chatId,
+                photo: imageUrl,
+                caption: captionText,
+                parse_mode: 'MarkdownV2',
+                reply_markup: JSON.stringify(inlineKeyboard)
+            };
+
+            const response = await fetch(sendPhotoUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok) {
+                console.log('Image send failed, sending text only...');
+                await sendTextMessageOnly(transactionId);
+            } else {
+                console.log('User message with image & buttons sent successfully');
+            }
+            
+            return true;
+            
+        } catch (error) {
+            console.error('Error sending Telegram to user:', error);
+            await sendTextMessageOnly(transactionId);
+            return true;
+        }
+    }
+
+    // Fallback: Text only message
+    async function sendTextMessageOnly(transactionId) {
+        const paymentMethodsText = savedPayments.map(p => 
+            `• ${escapeMarkdownV2(p.method)}: ||${escapeMarkdownV2(p.number)}||`
+        ).join('\n');
+        
+        const fileInfo = formData?.uploadedFile ? 
+            `*File:* ${escapeMarkdownV2(formData.uploadedFile.fileName)}\n` +
+            `*Size:* ${escapeMarkdownV2((formData.uploadedFile.fileSize / 1024 / 1024).toFixed(2) + ' MB')}\n` : 
+            '';
+        
+        const textMessage = `✅ *Submission Successful\\!*\n\n` +
+                           `*Form Type:* ${escapeMarkdownV2(formData?.accountType)}\n` +
+                           `*Total IDs:* ${escapeMarkdownV2(formData?.ttlId)}\n` +
+                           `${fileInfo}` +
+                           `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
+                           `*Payment Details:*\n${paymentMethodsText}\n\n` +
+                           `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
+                           `*Time:* ${escapeMarkdownV2(new Date().toLocaleString("en-GB", { 
+                               timeZone: "Asia/Dhaka",
+                               day: "2-digit",
+                               month: "2-digit", 
+                               year: "numeric",
+                               hour: "2-digit", 
+                               minute: "2-digit", 
+                               second: "2-digit",
+                               hour12: true 
+                           }).replace(",", ""))}\n\n` +
+                           `We will process your request within 24 hours\\.`;
+        
+        await sendTelegramMessageV2(userData.chatId, textMessage);
+    }
+
+    // Send Telegram Message with MarkdownV2
+    async function sendTelegramMessageV2(chatId, message) {
+        try {
+            const payload = {
+                chat_id: chatId,
+                text: message,
+                parse_mode: 'MarkdownV2'
+            };
+
+            const response = await fetch(BOT_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok) {
+                throw new Error(result.description || 'Unknown Telegram API error');
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('Error sending Telegram message with MarkdownV2:', error);
+            throw error;
+        }
+    }
+
+    // Send Telegram Message
+    async function sendTelegramMessage(chatId, message, useMarkdown = true) {
+        try {
+            const payload = {
+                chat_id: chatId,
+                text: message
+            };
+
+            if (useMarkdown) {
+                payload.parse_mode = 'Markdown';
+            }
+
+            const response = await fetch(BOT_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok) {
+                throw new Error(result.description || 'Unknown Telegram API error');
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('Error sending Telegram message:', error);
+            throw error;
+        }
+    }
+
+    // Redirect to Success Page
+    function redirectToSuccessPage(transactionId) {
+        const baseUrl = "https://fbm212.github.io";
+        
+        const successData = {
+            userId: formData.telegramUserId,
+            userName: formData.telegramUsername,
+            firstName: formData.telegramFirstName,
+            lastName: formData.telegramLastName,
+            userFullName: `${formData.telegramFirstName} ${formData.telegramLastName}`.trim(),
+            
+            accountType: formData.accountType,
+            mailBox: formData.mailBox,
+            cookie2fa: formData.cookie2fa,
+            fdType: formData.fdType,
+            ttlId: formData.ttlId,
+            googleSheet: formData.googleSheet,
+            submissionTime: formData.submissionTime,
+            
+            fileName: formData?.uploadedFile?.fileName || '',
+            fileSize: formData?.uploadedFile?.fileSize || 0,
+            
+            transactionId: transactionId,
+            status: 'submitted',
+            date: new Date().toISOString(),
+            theme: formData.theme,
+            action: 'form_submission_success'
         };
         
-        const encodedData = encodeURIComponent(JSON.stringify(formData));
-        window.location.href = `${nextPageUrl}?formData=${encodedData}`;
+        const params = new URLSearchParams();
+        Object.keys(successData).forEach(key => {
+            params.append(key, successData[key]);
+        });
         
-      } catch (error) {
-        console.error("Submission error:", error);
-        showErrorAlert(`System error: ${error.message}`);
-        continueBtn.innerHTML = originalText;
-        continueBtn.disabled = false;
-      }
-    });
-  </script>
+        window.location.href = `${baseUrl}/UserUI-Submit-Work/success/socialFileSubmite/success.html?${params.toString()}`;
+    }
+
+    // Show Alert with SweetAlert
+    function showAlert(title, text, icon) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            confirmButtonColor: '#2563eb',
+            confirmButtonText: 'OK',
+            timer: icon === 'success' ? 3000 : undefined,
+            timerProgressBar: icon === 'success' ? true : false
+        });
+    }
+</script>
 </body>
 </html>
