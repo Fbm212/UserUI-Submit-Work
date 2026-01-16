@@ -852,29 +852,24 @@
         });
     }
 
-    // Go Back Function with data preservation
-    function goBack() {
-        Swal.fire({
-            title: 'Go Back?',
-            text: 'Are you sure you want to go back? Your form data will be preserved.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, Go Back!',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Preserve form data when going back
-                if (formData) {
-                    const formDataStr = encodeURIComponent(JSON.stringify(formData));
-                    window.location.href = `previous-page.html?formData=${formDataStr}`;
-                } else {
-                    window.history.back();
-                }
-            }
-        });
-    }
+    // Go Back Function - Simple version
+function goBack() {
+    Swal.fire({
+        title: 'Go Back?',
+        text: 'Are you sure you want to go back? Your form data will be preserved.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, Go Back!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // সরাসরি history back ব্যবহার করুন
+            window.history.back();
+        }
+    });
+}
 
     // Show Confirmation Modal
     function showConfirmationModal() {
