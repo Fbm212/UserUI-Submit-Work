@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
@@ -141,111 +141,6 @@
       border-color: var(--border-color);
     }
 
-    /* File Upload Styling */
-    .file-upload-container {
-      position: relative;
-      margin-top: 5px;
-    }
-
-    #file-upload {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-      z-index: 2;
-    }
-
-    .file-upload-area {
-      border: 2px dashed var(--border-color);
-      border-radius: var(--radius);
-      padding: 30px 20px;
-      text-align: center;
-      background-color: var(--input-bg);
-      transition: all 0.3s ease;
-      position: relative;
-      z-index: 1;
-      display: block;
-      cursor: pointer;
-    }
-
-    .file-upload-area.hidden {
-      display: none;
-    }
-
-    .file-upload-area:hover {
-      border-color: var(--primary);
-      background-color: rgba(37, 99, 235, 0.05);
-    }
-
-    .file-upload-area i {
-      font-size: 2.5rem;
-      color: var(--primary);
-      margin-bottom: 10px;
-      display: block;
-    }
-
-    .file-upload-area p {
-      color: var(--text);
-      margin-bottom: 5px;
-      font-size: 0.95rem;
-    }
-
-    .file-upload-area .file-format {
-      color: var(--text-light);
-      font-size: 0.85rem;
-    }
-
-    .file-info {
-      display: none;
-      align-items: center;
-      background-color: var(--input-bg);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      padding: 12px 15px;
-      margin-top: 10px;
-      gap: 10px;
-      animation: fadeInUp 0.3s ease;
-    }
-
-    .file-info.show {
-      display: flex;
-    }
-
-    .file-info i.fa-file-excel {
-      color: #1d6f42;
-      font-size: 1.2rem;
-    }
-
-    #file-name {
-      flex: 1;
-      font-weight: 500;
-      color: var(--text);
-      font-size: 0.9rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    #file-size {
-      color: var(--text-light);
-      font-size: 0.85rem;
-    }
-
-    .remove-file {
-      background: none;
-      border: none;
-      color: var(--text-light);
-      cursor: pointer;
-      padding: 0;
-      font-size: 0.9rem;
-      transition: color 0.3s ease;
-    }
-
-    .remove-file:hover {
-      color: #ef4444;
-    }
-
     /* Single Input */
     .form-single { 
       margin-bottom: 20px; 
@@ -379,7 +274,7 @@
     @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
       }
       to {
         opacity: 1;
@@ -402,31 +297,22 @@
         <div class="form-item">
           <label for="account-type">Account Type:</label>
           <select id="account-type" required>
-            <option disabled selected>--Select--</option>
-            <option>Normal File</option>
-            <option>Number 2Fa File</option>
-            <option>Trusted Mail File</option>
-            <option>rPc 1000s UID</option>
-            <option>rPc 55-56s UID</option>
-            <option>rPc 1k Friends File</option>
-            <option>mPc 1000s UID</option>
-            <option>Sm Pc 1000s UID</option>
-            <option>Sc Pc 1000s UID</option>
-            <option>mSc Pc 1000s UID</option>
-            <option>2Fa Pc 1000s UID</option>
+            <option disabled >--Select--</option>
+            <option selected>Instagram Cookies</option>
+            <option disabled>Instagram 2Fa</option>
           </select>
         </div>
         <div class="form-item">
           <label for="mail-box">Mail Type:</label>
           <select id="mail-box" required>
             <option disabled selected>--Select--</option>
-            <option>Web Mail</option>
-            <option>Trusted Hotmail</option>
-            <option>Trusted Outlook</option>
-            <option>Temp Mail</option>
-            <option>Any Mail</option>
-            <option>Sort Mail</option>
-            <option>Number</option>
+            <option >Web Mail </option>
+            <option >Trusted Hotmail </option>
+            <option >Trusted Outlook </option>
+            <option >Temp Mail </option>
+            <option >Any Mail </option>
+            <option >Sort Mail </option>
+            <option >Number </option>
           </select>
         </div>
       </div>
@@ -439,21 +325,16 @@
             <option disabled selected>--Select--</option>
             <option value="2FA">2FA</option>
             <option value="Cookies">Cookies</option>
-            <option value="2fa-Cook">2FA-Cookies</option>
           </select>
         </div>
         <div class="form-item">
-          <label for="fd-type">Friends:</label>
+          <label for="fd-tpe">Friends:</label>
           <select id="fd-type">
-            <option disabled selected>--Select--</option>
-            <option value="0FD">0FD</option>
+            <option disabled >--Select--</option>
+            <option selected value="0FD">0FD</option>
             <option value="10FD">10FD</option>
             <option value="20FD">20FD</option>
             <option value="30FD">30FD</option>
-            <option value="100FD+">rPc 100FD+</option>
-            <option value="300FD+">rPc 300FD+</option>
-            <option value="500 Fd+">rPc 500FD+</option>
-            <option value="1k Fd+">rPc 1k Fd+</option>
           </select>
         </div>
         <div class="form-item">
@@ -474,26 +355,11 @@
         </div>
       </div>
 
-      <!-- Single Input - Updated File Upload -->
-      <div class="form-single">
-        <label for="file-upload">File Upload:</label>
-        <div class="file-upload-container">
-          <input type="file" id="file-upload" accept=".xlsx,.xls" required>
-          <div class="file-upload-area" id="upload-area">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Click to upload or drag and drop</p>
-            <p class="file-format">Excel (.xlsx, .xls) files only</p>
-          </div>
-          <div id="file-info" class="file-info">
-            <i class="fas fa-file-excel"></i>
-            <span id="file-name"></span>
-            <span id="file-size"></span>
-            <button type="button" class="remove-file" onclick="removeFile()">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>
-      </div>
+      <!-- Single Input -->
+<div class="form-single">
+    <label for="google-sheet">File Link:</label>
+    <input type="text" id="google-sheet" placeholder="Paste Google Sheet Link Here">
+</div>
 
       <!-- Button Container -->
       <div class="button-container">
@@ -507,823 +373,214 @@
   
   <!-- Custom Alert -->
   <div id="custom-alert" class="hidden">
-    <div class="alert-box">
-      <p id="alert-message"></p>
-      <button id="alert-ok">OK</button>
-    </div>
+      <div class="alert-box">
+          <p id="alert-message"></p>
+          <button id="alert-ok">OK</button>
+      </div>
   </div>
 
- <script>
-    // Telegram Bot Configuration
-    const BOT_TOKEN = "8377520270:AAHL1MrNxIwgrRQAk_lDWJrEs78wu76Dnh0";
-    const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-
-    // Telegram Web App
-    const tg = window.Telegram.WebApp;
-    let userData = null;
-    let formData = null;
-
-    // Payment Methods Configuration with Logos
-    const paymentMethods = {
-        Bkash: { 
-            pattern: "^01[3-9][0-9]{8}$", 
-            placeholder: "01XXXXXXXXX", 
-            label: "Bkash Number",
-            logo: "https://i.ibb.co/jPr3zzT5/bKash.png"
-        },
-        Nagad: { 
-            pattern: "^01[3-9][0-9]{8}$", 
-            placeholder: "01XXXXXXXXX", 
-            label: "Nagad Number",
-            logo: "https://i.ibb.co/ZzfbKbrz/nagad.png"
-        },
-        Rocket: { 
-            pattern: "^01[3-9][0-9]{8}$", 
-            placeholder: "01XXXXXXXXX", 
-            label: "Rocket Number",
-            logo: "https://i.ibb.co/0pGsRX5m/rocket.png"
-        },
-        Cellfin: { 
-            pattern: "^01[3-9][0-9]{8}$", 
-            placeholder: "01XXXXXXXXX", 
-            label: "Cellfin Number",
-            logo: "https://i.ibb.co/gMbb1SkL/cellfinlogo.png"
-        }, 
-        Binance: { 
-            pattern: "^\\d{6,11}$", 
-            placeholder: "ID1042457700", 
-            label: "Binance ID",
-            logo: "https://i.ibb.co/FbzYZPst/binance.png"
-        },
-        Payeer: { 
-            pattern: "^P\\d{7,10}$", 
-            placeholder: "P1127766562", 
-            label: "Payeer ID",
-            logo: "https://i.ibb.co/38hcZcS/payeer.png"
-        }
-    };
-
-    let savedPayments = [];
-    let selectedPaymentMethod = null;
-
-    // Generate 10-character Transaction ID
-    function generateTransactionId() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let transactionId = '';
+  <script>
+    // URL থেকে ইউজার ডেটা পড়ার ফাংশন (থিম সহ)
+    function getUserFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userStr = urlParams.get("user");
+      
+      if (!userStr) {
+        console.log("No user data found in URL");
+        return null;
+      }
+      
+      try {
+        const userData = JSON.parse(decodeURIComponent(userStr));
         
-        for (let i = 0; i < 10; i++) {
-            transactionId += chars.charAt(Math.floor(Math.random() * chars.length));
+        // থিম অটো অ্যাপ্লাই করুন
+        if (userData.theme === 'dark') {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
         }
         
-        return transactionId;
+        return userData;
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        return null;
+      }
     }
 
-    // MarkdownV2 Escape Function
-    function escapeMarkdownV2(text) {
-        if (!text) return 'N/A';
-        return text.toString()
-            .replace(/\_/g, '\\_')
-            .replace(/\*/g, '\\*')
-            .replace(/\[/g, '\\[')
-            .replace(/\]/g, '\\]')
-            .replace(/\(/g, '\\(')
-            .replace(/\)/g, '\\)')
-            .replace(/\~/g, '\\~')
-            .replace(/\`/g, '\\`')
-            .replace(/\>/g, '\\>')
-            .replace(/\#/g, '\\#')
-            .replace(/\+/g, '\\+')
-            .replace(/\-/g, '\\-')
-            .replace(/\=/g, '\\=')
-            .replace(/\|/g, '\\|')
-            .replace(/\{/g, '\\{')
-            .replace(/\}/g, '\\}')
-            .replace(/\./g, '\\.')
-            .replace(/\!/g, '\\!');
-    }
-
-    // Initialize Application
+    // DOM লোড হলে ইউজার ডেটা অটো-ফিল করুন
     document.addEventListener('DOMContentLoaded', function() {
-        initializeApp();
+      const user = getUserFromURL();
+      
+      if (user) {
+        document.getElementById('tg-username').value = user.username ? '@' + user.username : '';
+        document.getElementById('tg-chat-id').value = user.id || '';
+        window.userData = user;
+      } else {
+        document.getElementById('tg-username').value = '@username';
+        document.getElementById('tg-chat-id').value = '';
+      }
     });
 
-    // Initialize App with Telegram User Data and Form Data
-    function initializeApp() {
-        // Telegram WebApp Expansion
-        if (tg && tg.expand) {
-            tg.expand();
-        }
-        
-        // Get Form Data
-        loadFormData();
-        
-        // Get Telegram User Data
-        let tgUser = null;
-        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            tgUser = tg.initDataUnsafe.user;
-        }
-        
-        // Fallback for testing outside Telegram
-        if (!tgUser) {
-            tgUser = {
-                id: formData?.telegramUserId || "123456789",
-                username: formData?.telegramUsername || "test_user",
-                first_name: formData?.telegramFirstName || "Test",
-                last_name: formData?.telegramLastName || "User",
-                photo_url: formData?.telegramPhotoUrl || "",
-                language_code: "en"
-            };
-            console.log('Demo Mode: Running without Telegram WebApp');
-        }
-        
-        // Store user data
-        userData = {
-            chatId: tgUser.id.toString(),
-            username: tgUser.username || `user_${tgUser.id}`,
-            firstName: tgUser.first_name || '',
-            lastName: tgUser.last_name || '',
-            photoUrl: tgUser.photo_url || '',
-            languageCode: tgUser.language_code || 'en',
-            isPremium: tgUser.is_premium || false
-        };
-        
-        console.log('User Data Loaded:', {
-            chatId: userData.chatId,
-            username: userData.username,
-            name: `${userData.firstName} ${userData.lastName}`.trim()
-        });
-
-        console.log('Form Data Loaded:', formData);
-        
-        // Update header
-        updateUserGreeting();
-        
-        loadPaymentMethods();
-        setupEventListeners();
-        setupKeyboardNavigation();
+    // কাস্টম এলার্ট ফাংশন
+    function showAlert(message) {
+      const alertBox = document.getElementById("custom-alert");
+      const alertMessage = document.getElementById("alert-message");
+      
+      alertMessage.textContent = message;
+      alertBox.style.display = "flex";
     }
 
-    // Load Form Data - আপডেট করা হয়েছে
-    function loadFormData() {
-        // 1. প্রথমে localStorage থেকে ডেটা লোড করুন
-        const storedData = localStorage.getItem('formSubmissionData');
-        if (storedData) {
-            try {
-                formData = JSON.parse(storedData);
-                console.log("✅ Form data loaded from localStorage:", formData);
-                
-                // Clean up - ডেটা লোড হওয়ার পর মুছে দিন
-                localStorage.removeItem('formSubmissionData');
-                
-                // Apply theme
-                if (formData.theme === 'dark') {
-                    document.body.classList.add('dark-mode');
-                } else {
-                    document.body.classList.remove('dark-mode');
-                }
-                
-                return;
-            } catch (error) {
-                console.error("❌ Error parsing localStorage data:", error);
-            }
-        }
-        
-        // 2. যদি localStorage এ না থাকে, URL থেকে চেষ্টা করুন
-        const urlParams = new URLSearchParams(window.location.search);
-        const formDataStr = urlParams.get("formData");
-        
-        if (!formDataStr) {
-            console.log("⚠️ No form data found");
-            showAlert('Error', 'Form data not found. Please go back and try again.', 'error');
-            formData = null;
-            return;
-        }
-        
-        try {
-            // Try base64 decode first
-            try {
-                formData = JSON.parse(atob(formDataStr));
-            } catch (base64Error) {
-                // If base64 fails, try URL decode
-                formData = JSON.parse(decodeURIComponent(formDataStr));
-            }
-            
-            console.log("✅ Form data loaded from URL:", formData);
-            
-            // Apply theme
-            if (formData.theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-            
-        } catch (error) {
-            console.error("❌ Error parsing form data:", error);
-            formData = null;
-            
-            // User-friendly error message
-            showAlert('Data Error', 'Unable to load form data. Please go back and try again.', 'error');
-        }
-    }
+    document.getElementById("alert-ok").addEventListener("click", function () {
+      document.getElementById("custom-alert").style.display = "none";
+    });
 
-    // Update header greeting
-    function updateUserGreeting() {
-        const userFullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User';
-        const userFullNameElement = document.getElementById('userFullName');
-        userFullNameElement.textContent = userFullName;
-    }
-
-    // Load Payment Methods in 3 Column Grid
-    function loadPaymentMethods() {
-        const container = document.getElementById('paymentMethodsGrid');
-        container.innerHTML = '';
-        
-        Object.keys(paymentMethods).forEach(method => {
-            const payment = paymentMethods[method];
-            const card = document.createElement('div');
-            card.className = 'payment-method-card';
-            card.setAttribute('role', 'button');
-            card.setAttribute('aria-label', `Select ${method} payment method`);
-            card.innerHTML = `
-                <div class="payment-logo" style="background-image: url(${payment.logo})" aria-hidden="true"></div>
-                <div class="payment-method-name">${method}</div>
-            `;
-            
-            card.addEventListener('click', () => selectPaymentMethod(method, card));
-            container.appendChild(card);
-        });
-    }
-
-    // Select Payment Method
-    function selectPaymentMethod(method, card) {
-        document.querySelectorAll('.payment-method-card').forEach(el => {
-            el.classList.remove('selected');
-        });
-        
-        card.classList.add('selected');
-        
-        selectedPaymentMethod = method;
-        const input = document.getElementById('paymentNumberInput');
-        input.placeholder = paymentMethods[method].placeholder;
-        input.value = '';
-        input.setAttribute('aria-label', paymentMethods[method].label);
-        
-        input.classList.remove('valid', 'invalid');
-        
-        validatePaymentForm();
-    }
-
-    // Setup Event Listeners
-    function setupEventListeners() {
-        document.getElementById('addPaymentBtn').addEventListener('click', addPaymentMethod);
-        document.getElementById('paymentNumberInput').addEventListener('input', validatePaymentInput);
-        document.getElementById('confirmWithdrawBtn').addEventListener('click', showConfirmationModal);
-        document.getElementById('backBtnBottom').addEventListener('click', goBack);
-    }
-
-    // Setup Keyboard Navigation
-    function setupKeyboardNavigation() {
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                goBack();
-            }
-            if (e.key === 'Enter' && validatePaymentForm()) {
-                addPaymentMethod();
-            }
-        });
-    }
-
-    // Go Back Function
+    // গো ব্যাক ফাংশন
     function goBack() {
-        Swal.fire({
-            title: 'Go Back?',
-            text: 'Are you sure you want to go back? Your form data will be preserved.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, Go Back!',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // ফর্ম ডেটা নিয়ে ফিরে যান
-                if (formData) {
-                    localStorage.setItem('formSubmissionData', JSON.stringify(formData));
-                }
-                window.history.back();
-            }
-        });
+      window.history.back();
     }
 
-    // Show Confirmation Modal
-    function showConfirmationModal() {
-        if (savedPayments.length === 0) {
-            showAlert('Required', 'Please add at least one payment method', 'error');
-            return;
-        }
+    // ফর্ম ভ্যালিডেশন
+    document.getElementById("account-type").addEventListener("change", function () { 
+      const accountType = this.value.toLowerCase(); 
+      const mailBox = document.getElementById("mail-box"); 
+      const cookie2fa = document.getElementById("2fa-cookie"); 
+      const fdType = document.getElementById("fd-type");
+
+      mailBox.disabled = false;
+      mailBox.required = true;
+      cookie2fa.disabled = false;
+      cookie2fa.required = true;
+      fdType.disabled = false;
+      fdType.required = true;
+
+      if (cookie2fa.value === "Cookies") {
+          fdType.disabled = true;
+          fdType.value = "";
+      } else {
+          fdType.disabled = false;
+      }
+    });
+
+    document.getElementById("2fa-cookie").addEventListener("change", function () { 
+      const fdType = document.getElementById("fd-type"); 
+      if (this.value === "Cookies") { 
+          fdType.disabled = true; 
+          fdType.value = ""; 
+      } else { 
+          fdType.disabled = false; 
+      }
+    });
+
+ // Continue বাটন ক্লিক হ্যান্ডলার - FINAL SOLUTION
+document.getElementById("continue-btn").addEventListener("click", function () { 
+    const accountType = document.getElementById("account-type").value; 
+    const mailBox = document.getElementById("mail-box").value || " "; 
+    const cookie2fa = document.getElementById("2fa-cookie").value.trim();
+    const fdType = document.getElementById("fd-type").value || " "; 
+    const ttlId = document.getElementById("ttl-id").value; 
+    const tgUsername = document.getElementById("tg-username").value.trim();
+    const tgChatId = document.getElementById("tg-chat-id").value; 
+    const googleSheet = document.getElementById("google-sheet").value.trim();
+
+
+  // ✅ অ্যাকাউন্ট টাইপের সাথে চ্যানেল আইডি ম্যাপিং
+    const accountChannels = {
+        "Instagram Cookies": "-1002698350138",
+        "Instagram 2Fa": "-1002698350138"
+     };
+
+      // শুধুমাত্র @ চেক করা
+      if (!tgUsername.startsWith("@")) {
+          showAlert(" অবশ্যই প্রথমে '@' দিতে হবে। ");
+          return;
+      }
+
+      const requiredFields = [
+          { value: accountType, name: "Account Type" },
+          { value: cookie2fa, name: "2FA/Cookies" },
+          { value: ttlId, name: "Ttl Id" },
+          { value: tgUsername, name: "Tg Username" },
+          { value: tgChatId, name: "Tg Chat Id" },
+          { value: googleSheet, name: "Google Sheet Link" }
+      ];
+
+      for (const field of requiredFields) {
+          if (!field.value || field.value === "Select") {
+              showAlert(`Please fill out the ${field.name}.`);
+              return;
+          }
+      }
+
+      if (!/^\d{1,4}$/.test(ttlId)) {
+          showAlert("Ttl Id must be between 1 and 4 digits.");
+          return;
+      }
+
+      if (!/^\d{9,10}$/.test(tgChatId)) {
+          showAlert("Ttg Chat Id must be 9 or 10 digits.");
+          return;
+      }
+
+      // ✅ Google Sheets লিঙ্ক validation (required)
+    /* const sheetLinkRegex = /^https?:\/\/(docs\.google\.com\/spreadsheets\/.+)/;
+    if (!sheetLinkRegex.test(googleSheet)) {
+        showAlert("Please enter a valid Google Sheet link.");
+        return; 
+         } */
+
+    // ✅ শুধু basic URL format চেক করুন - ✅ Google Sheets লিঙ্ক validation (required)
+if (!googleSheet.startsWith('https://') && !googleSheet.startsWith('http://')) {
+    showAlert("Please enter a valid URL starting with http:// or https://");
+    return;
+}
+
+      // ✅ 2FA/কুকি সিলেক্ট সমস্যা
+      if (cookie2fa !== "2FA" && cookie2fa !== "Cookies") {
+          showAlert("সঠিকভাবে 2FA বা Cookies সিলেক্ট করুন।");
+          return;
+      }
+
+      // ✅ সমস্ত ডেটা সংগ্রহ করে পরের পেইজে রিডাইরেক্ট
+      const nextPageUrl = "https://fbm212.github.io/UserUI-Submit-Work/Payment-Methods/socialFileSubmitePayment.html";
+
+       // ✅ সমস্ত ডেটা সংগ্রহ করে পরের পেইজে রিডাইরেক্ট
+    const formData = {
+        // টেলিগ্রাম থেকে প্রাপ্ত ইউজার ডেটা
+        telegramUserId: window.userData?.id || '',
+        telegramUsername: window.userData?.username || '',
+        telegramFirstName: window.userData?.first_name || '',
+        telegramLastName: window.userData?.last_name || '',
+        telegramPhotoUrl: window.userData?.photo_url || '',
+        theme: window.userData?.theme || 'light',
         
-        const paymentMethodsText = savedPayments.map(p => 
-            `• ${p.method}: ${p.number}`
-        ).join('\n');
-        
-        Swal.fire({
-            title: 'Confirm Submission?',
-            html: `<div style="text-align: left;">
-                   <p><strong>Payment Methods:</strong></p>
-                   <pre style="background: var(--bg); padding: 10px; border-radius: 8px; font-size: 0.9rem; margin: 10px 0; white-space: pre-wrap;">${paymentMethodsText}</pre>
-                   <p style="margin-top: 10px;">Are you sure you want to submit?</p>
-                 </div>`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#2563eb',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Yes, Submit!',
-            cancelButtonText: 'Review',
-            backdrop: true,
-            allowOutsideClick: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                confirmWithdrawal();
-            }
-        });
-    }
-
-    // Add Payment Method
-    function addPaymentMethod() {
-        const number = document.getElementById('paymentNumberInput').value.trim();
-
-        if (!selectedPaymentMethod) {
-            showAlert('Required', 'Please select payment method first', 'error');
-            return;
-        }
-
-        if (!number) {
-            showAlert('Required', 'Please enter payment number', 'error');
-            return;
-        }
-
-        const regex = new RegExp(paymentMethods[selectedPaymentMethod].pattern);
-        if (!regex.test(number)) {
-            showAlert('Invalid', `Please enter valid ${paymentMethods[selectedPaymentMethod].label}`, 'warning');
-            return;
-        }
-
-        const normalizedNumber = number.toLowerCase().trim();
-        if (savedPayments.some(p => 
-            p.method === selectedPaymentMethod && 
-            p.number.toLowerCase().trim() === normalizedNumber
-        )) {
-            showAlert('Duplicate', 'This payment method is already added', 'warning');
-            return;
-        }
-
-        savedPayments.push({ 
-            method: selectedPaymentMethod, 
-            number: number,
-            logo: paymentMethods[selectedPaymentMethod].logo
-        });
-        renderSavedPayments();
-        
-        document.getElementById('paymentNumberInput').value = '';
-        document.getElementById('paymentNumberInput').classList.remove('valid');
-        
-        document.getElementById('confirmWithdrawBtn').disabled = savedPayments.length === 0;
-        
-        showAlert('Success', 'Payment method added successfully', 'success');
-    }
-
-    // Render Saved Payments
-    function renderSavedPayments() {
-        const container = document.getElementById('savedPayments');
-        container.innerHTML = '';
-        
-        if (savedPayments.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: 30px; color: var(--text-light);">
-                    <i class="fas fa-wallet" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
-                    <p>No payment methods added yet</p>
-                    <p style="font-size: 0.8rem; margin-top: 5px;">Select a method above and add your details</p>
-                </div>
-            `;
-            return;
-        }
-
-        savedPayments.forEach((payment, index) => {
-            const paymentEl = document.createElement('div');
-            paymentEl.className = 'saved-payment-item';
-            paymentEl.innerHTML = `
-                <div class="saved-payment-info">
-                    <div class="saved-payment-logo" style="background-image: url(${payment.logo})"></div>
-                    <div>
-                        <div style="font-weight: 600; font-size: 0.9rem;">${payment.method}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-light);">${payment.number}</div>
-                    </div>
-                </div>
-                <button class="delete-payment-btn" data-index="${index}" aria-label="Delete ${payment.method} payment method">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            container.appendChild(paymentEl);
-        });
-
-        document.querySelectorAll('.delete-payment-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const index = parseInt(this.getAttribute('data-index'));
-                deletePayment(index);
-            });
-        });
-    }
-
-    // Delete Payment
-    function deletePayment(index) {
-        if (index >= 0 && index < savedPayments.length) {
-            savedPayments.splice(index, 1);
-            renderSavedPayments();
-            document.getElementById('confirmWithdrawBtn').disabled = savedPayments.length === 0;
-            showAlert('Removed', 'Payment method deleted', 'success');
-        }
-    }
-
-    // Validate Payment Input
-    function validatePaymentInput() {
-        const input = document.getElementById('paymentNumberInput');
-        const method = selectedPaymentMethod;
-        const value = input.value.trim();
-        
-        if (method && value) {
-            const regex = new RegExp(paymentMethods[method].pattern);
-            const isValid = regex.test(value);
-            
-            input.classList.remove('valid', 'invalid');
-            input.classList.add(isValid ? 'valid' : 'invalid');
-            
-            return isValid;
-        }
-        
-        input.classList.remove('valid', 'invalid');
-        return false;
-    }
-
-    // Validate Payment Form
-    function validatePaymentForm() {
-        const number = document.getElementById('paymentNumberInput').value.trim();
-        const method = selectedPaymentMethod;
-        
-        if (method && number) {
-            const regex = new RegExp(paymentMethods[method].pattern);
-            return regex.test(number);
-        }
-        return false;
-    }
-
-    // Confirm Withdrawal
-    async function confirmWithdrawal() {
-        if (savedPayments.length === 0) {
-            showAlert('Required', 'Please add at least one payment method', 'error');
-            return;
-        }
-        
-        const confirmBtn = document.getElementById('confirmWithdrawBtn');
-        confirmBtn.disabled = true;
-        confirmBtn.classList.add('loading');
-        
-        try {
-            const transactionId = generateTransactionId();
-            
-            const adminSuccess = await sendTelegramToAdmin(transactionId);
-            
-            if (adminSuccess) {
-                await sendTelegramToUser(transactionId);
-                redirectToSuccessPage(transactionId);
-            } else {
-                throw new Error('Failed to send submission');
-            }
-            
-        } catch (error) {
-            console.error('Error in confirmation process:', error);
-            
-            showAlert('Submission Failed', `Error: ${error.message}`, 'error');
-            
-            confirmBtn.disabled = false;
-            confirmBtn.classList.remove('loading');
-        }
-    }
-
-    // Send Telegram to Admin Channel
-    async function sendTelegramToAdmin(transactionId) {
-        try {
-            const submissionData = {
-                user: userData,
-                form: formData,
-                paymentMethods: savedPayments,
-                submissionTime: new Date().toLocaleString("en-GB", { 
-                    timeZone: "Asia/Dhaka",
-                    day: "2-digit",
-                    month: "2-digit", 
-                    year: "numeric",
-                    hour: "2-digit", 
-                    minute: "2-digit", 
-                    second: "2-digit",
-                    hour12: true 
-                }).replace(",", ""),
-                transactionId: transactionId
-            };
-
-            console.log('Sending Telegram to admin channel...');
-
-            const paymentMethodsText = savedPayments.map(p => 
-                `▫️ *${p.method}:* \`${p.number}\``
-            ).join('\n');
-
-            const fileInfo = formData?.uploadedFile ? 
-                `• File Name: ${formData.uploadedFile.fileName}\n` +
-                `• File Size: ${(formData.uploadedFile.fileSize / 1024 / 1024).toFixed(2)} MB\n` +
-                `• File Type: ${formData.uploadedFile.fileType}` : 
-                '• File: Not uploaded';
-
-            const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
-                        `👤 *User Information:*\n` +
-                        `• Name: ${userData.firstName} ${userData.lastName}\n` +
-                        `• Username: @${userData.username.replace(/_/g, '\\_')}\n` +
-                        `• User ID: \`${userData.chatId}\`\n\n` +
-                        `📋 *Form Details:*\n` +
-                        `• Account Type: ${formData?.accountType || 'N/A'}\n` +
-                        `• Mail Type: ${formData?.mailBox || 'N/A'}\n` +
-                        `• 2FA/Cookie: ${formData?.cookie2fa || 'N/A'}\n` +
-                        `• Friends: ${formData?.fdType || 'N/A'}\n` +
-                        `• Total IDs: ${formData?.ttlId || 'N/A'}\n` +
-                        `• User Type: ${formData?.userType || 'Normal'}\n` +
-                        `${fileInfo}\n\n` +
-                        `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
-                        `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
-                        `🔢 *Transaction ID:* \`${transactionId}\``;
-
-            const targetChannelId = formData?.channelId || "-1002654345940";
-
-            console.log('Target Channel ID:', targetChannelId);
-
-            try {
-                await sendTelegramMessage(targetChannelId, adminMessage, true);
-                console.log('Admin channel message sent successfully to:', targetChannelId);
-                return true;
-            } catch (markdownError) {
-                console.log('Markdown failed, trying plain text...');
-                
-                try {
-                    const plainAdminMessage = adminMessage
-                        .replace(/\*/g, '')
-                        .replace(/`/g, '')
-                        .replace(/_/g, '');
-                    
-                    await sendTelegramMessage(targetChannelId, plainAdminMessage, false);
-                    console.log('Admin channel message sent successfully with plain text to:', targetChannelId);
-                    return true;
-                } catch (plainError) {
-                    console.log('Plain text also failed, trying basic text...');
-                    
-                    const basicAdminMessage = `NEW FORM SUBMISSION\n\nUser: ${userData.firstName} ${userData.lastName} (@${userData.username})\nForm: ${formData?.accountType || 'N/A'}\nFile: ${formData?.uploadedFile?.fileName || 'N/A'}\nPayment Methods: ${savedPayments.length}\nTime: ${submissionData.submissionTime}\nTransaction ID: ${transactionId}`;
-                    
-                    await sendTelegramMessage(targetChannelId, basicAdminMessage, false);
-                    console.log('Admin channel message sent successfully with basic text to:', targetChannelId);
-                    return true;
-                }
-            }
-
-        } catch (error) {
-            console.error('Error sending Telegram to admin:', error);
-            return false;
-        }
-    }
-
-    // Send Telegram to User
-    async function sendTelegramToUser(transactionId) {
-        try {
-            const imageUrl = "https://i.ibb.co/t5Q3JBF/Submite-Scc.jpg";
-            
-            const paymentMethodsText = savedPayments.map(p => 
-                `• ${escapeMarkdownV2(p.method)}: ||${escapeMarkdownV2(p.number)}||`
-            ).join('\n');
-
-            const fileInfo = formData?.uploadedFile ? 
-                `*File:* ${escapeMarkdownV2(formData.uploadedFile.fileName)}\n` +
-                `*Size:* ${escapeMarkdownV2((formData.uploadedFile.fileSize / 1024 / 1024).toFixed(2) + ' MB')}\n` : 
-                '';
-
-            const captionText = `✅ *Submission Successful\\!*\n\n` +
-                               `*Form Type:* ${escapeMarkdownV2(formData?.accountType)}\n` +
-                               `*Total IDs:* ${escapeMarkdownV2(formData?.ttlId)}\n` +
-                               `${fileInfo}` +
-                               `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
-                               `*Payment Details:*\n${paymentMethodsText}\n\n` +
-                               `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
-                               `*Time:* ${escapeMarkdownV2(new Date().toLocaleString("en-GB", { 
-                                   timeZone: "Asia/Dhaka",
-                                   day: "2-digit",
-                                   month: "2-digit", 
-                                   year: "numeric",
-                                   hour: "2-digit", 
-                                   minute: "2-digit", 
-                                   second: "2-digit",
-                                   hour12: true 
-                               }).replace(",", ""))}\n\n` +
-                               `We will process your request within 24 hours\\.`;
-
-            const inlineKeyboard = {
-                inline_keyboard: [
-                    [
-                        {
-                            text: "🆘 Need Help",
-                            url: "https://t.me/mdbyoc"
-                        },
-                        {
-                            text: "👥 Join Group", 
-                            url: "https://t.me/FbmMarket"
-                        }
-                    ]
-                ]
-            };
-
-            const sendPhotoUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-            
-            const payload = {
-                chat_id: userData.chatId,
-                photo: imageUrl,
-                caption: captionText,
-                parse_mode: 'MarkdownV2',
-                reply_markup: JSON.stringify(inlineKeyboard)
-            };
-
-            const response = await fetch(sendPhotoUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            const result = await response.json();
-            
-            if (!result.ok) {
-                console.log('Image send failed, sending text only...');
-                await sendTextMessageOnly(transactionId);
-            } else {
-                console.log('User message with image & buttons sent successfully');
-            }
-            
-            return true;
-            
-        } catch (error) {
-            console.error('Error sending Telegram to user:', error);
-            await sendTextMessageOnly(transactionId);
-            return true;
-        }
-    }
-
-    // Fallback: Text only message
-    async function sendTextMessageOnly(transactionId) {
-        const paymentMethodsText = savedPayments.map(p => 
-            `• ${escapeMarkdownV2(p.method)}: ||${escapeMarkdownV2(p.number)}||`
-        ).join('\n');
-        
-        const fileInfo = formData?.uploadedFile ? 
-            `*File:* ${escapeMarkdownV2(formData.uploadedFile.fileName)}\n` +
-            `*Size:* ${escapeMarkdownV2((formData.uploadedFile.fileSize / 1024 / 1024).toFixed(2) + ' MB')}\n` : 
-            '';
-        
-        const textMessage = `✅ *Submission Successful\\!*\n\n` +
-                           `*Form Type:* ${escapeMarkdownV2(formData?.accountType)}\n` +
-                           `*Total IDs:* ${escapeMarkdownV2(formData?.ttlId)}\n` +
-                           `${fileInfo}` +
-                           `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
-                           `*Payment Details:*\n${paymentMethodsText}\n\n` +
-                           `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
-                           `*Time:* ${escapeMarkdownV2(new Date().toLocaleString("en-GB", { 
-                               timeZone: "Asia/Dhaka",
-                               day: "2-digit",
-                               month: "2-digit", 
-                               year: "numeric",
-                               hour: "2-digit", 
-                               minute: "2-digit", 
-                               second: "2-digit",
-                               hour12: true 
-                           }).replace(",", ""))}\n\n` +
-                           `We will process your request within 24 hours\\.`;
-        
-        await sendTelegramMessageV2(userData.chatId, textMessage);
-    }
-
-    // Send Telegram Message with MarkdownV2
-    async function sendTelegramMessageV2(chatId, message) {
-        try {
-            const payload = {
-                chat_id: chatId,
-                text: message,
-                parse_mode: 'MarkdownV2'
-            };
-
-            const response = await fetch(BOT_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            const result = await response.json();
-            
-            if (!result.ok) {
-                throw new Error(result.description || 'Unknown Telegram API error');
-            }
-            
-            return result;
-        } catch (error) {
-            console.error('Error sending Telegram message with MarkdownV2:', error);
-            throw error;
-        }
-    }
-
-    // Send Telegram Message
-    async function sendTelegramMessage(chatId, message, useMarkdown = true) {
-        try {
-            const payload = {
-                chat_id: chatId,
-                text: message
-            };
-
-            if (useMarkdown) {
-                payload.parse_mode = 'Markdown';
-            }
-
-            const response = await fetch(BOT_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            const result = await response.json();
-            
-            if (!result.ok) {
-                throw new Error(result.description || 'Unknown Telegram API error');
-            }
-            
-            return result;
-        } catch (error) {
-            console.error('Error sending Telegram message:', error);
-            throw error;
-        }
-    }
-
-    // Redirect to Success Page
-    function redirectToSuccessPage(transactionId) {
-        const baseUrl = "https://fbm212.github.io";
-        
-        const successData = {
-            userId: formData.telegramUserId,
-            userName: formData.telegramUsername,
-            firstName: formData.telegramFirstName,
-            lastName: formData.telegramLastName,
-            userFullName: `${formData.telegramFirstName} ${formData.telegramLastName}`.trim(),
-            
-            accountType: formData.accountType,
-            mailBox: formData.mailBox,
-            cookie2fa: formData.cookie2fa,
-            fdType: formData.fdType,
-            ttlId: formData.ttlId,
-            googleSheet: formData.googleSheet,
-            submissionTime: formData.submissionTime,
-            
-            fileName: formData?.uploadedFile?.fileName || '',
-            fileSize: formData?.uploadedFile?.fileSize || 0,
-            
-            transactionId: transactionId,
-            status: 'submitted',
-            date: new Date().toISOString(),
-            theme: formData.theme,
-            action: 'form_submission_success'
-        };
-        
-        const params = new URLSearchParams();
-        Object.keys(successData).forEach(key => {
-            params.append(key, successData[key]);
-        });
-        
-        window.location.href = `${baseUrl}/UserUI-Submit-Work/success/socialFileSubmite/success.html?${params.toString()}`;
-    }
-
-    // Show Alert with SweetAlert
-    function showAlert(title, text, icon) {
-        Swal.fire({
-            title: title,
-            text: text,
-            icon: icon,
-            confirmButtonColor: '#2563eb',
-            confirmButtonText: 'OK',
-            timer: icon === 'success' ? 3000 : undefined,
-            timerProgressBar: icon === 'success' ? true : false
-        });
-    }
-</script>
+        // ফর্ম ডেটা
+        accountType: accountType,
+        mailBox: mailBox,
+        cookie2fa: cookie2fa,
+        fdType: fdType,
+        ttlId: ttlId,
+        tgUsername: tgUsername,
+        tgChatId: tgChatId,
+        googleSheet: googleSheet,
+        channelId: accountChannels[accountType], // 🟢 এই লাইনটি আপডেট হয়েছে
+        submissionTime: new Date().toLocaleString("en-GB", { 
+            timeZone: "Asia/Dhaka", 
+            day: "2-digit", 
+            month: "2-digit", 
+            year: "numeric",
+            hour: "2-digit", 
+            minute: "2-digit", 
+            second: "2-digit",
+            hour12: true 
+        }).replace(",", "")
+    };
+  
+    // ডেটা URL প্যারামিটারে কনভার্ট করুন
+    const encodedData = encodeURIComponent(JSON.stringify(formData));
+    
+    // পরের পেইজে রিডাইরেক্ট করুন
+    window.location.href = `${nextPageUrl}?formData=${encodedData}`;
+});
+  </script>
 </body>
 </html>
