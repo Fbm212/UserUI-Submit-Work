@@ -112,14 +112,9 @@
             text-align: left;
         }
 
-        /* File Info Section */
+        /* File Info Section - HIDDEN */
         .file-info-section {
-            background: var(--card);
-            border-radius: var(--radius);
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 2px solid var(--primary);
-            box-shadow: var(--shadow);
+            display: none;
         }
 
         .file-info-header {
@@ -647,7 +642,7 @@
             </div>
         </header>
 
-        <!-- File Info Section -->
+        <!-- File Info Section - HIDDEN -->
         <div class="file-info-section" id="fileInfoSection">
             <div class="file-info-header">
                 <i class="fas fa-file-excel"></i>
@@ -923,7 +918,7 @@
             // Update header with user's full name
             updateUserGreeting();
             
-            // Display file information
+            // Display file information (but section is hidden)
             displayFileInfo();
             
             loadPaymentMethods();
@@ -943,7 +938,7 @@
         userFullNameElement.textContent = userFullName;
     }
 
-    // Display file information
+    // Display file information (function exists but UI is hidden)
     function displayFileInfo() {
         if (uploadedFileData) {
             document.getElementById('fileNameDisplay').textContent = uploadedFileData.fileName || 'N/A';
@@ -956,18 +951,12 @@
         }
     }
 
-    // 🔴 **ফিক্সড: loadFormDataFromURL() ফাংশন**
+    // loadFormDataFromURL() ফাংশন
     async function loadFormDataFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         
         try {
             updateProgress(10, 'Loading form data...');
-            
-            // 🔴 **ফিক্স 1: সব প্যারামিটার চেক করা**
-            console.log('URL Parameters:');
-            for (const [key, value] of urlParams.entries()) {
-                console.log(`${key}: ${value}`);
-            }
             
             const dataInLocalStorage = urlParams.get("dataInLocalStorage") === "true";
             const isBasicMode = urlParams.get("basic") === "true";
@@ -1078,7 +1067,7 @@
                     userType: urlParams.get("userType") || "normal"
                 };
                 
-                // 🔴 **ফিক্স 2: ফাইল ডেটা সরাসরি URL থেকে (যদি থাকে)**
+                // ফাইল ডেটা সরাসরি URL থেকে (যদি থাকে)
                 const fileName = urlParams.get("fileName");
                 const fileSize = urlParams.get("fileSize");
                 const fileType = urlParams.get("fileType");
@@ -1121,7 +1110,6 @@
             console.error("Error loading form data:", error);
             updateProgress(0, 'Error loading data');
             
-            // 🔴 **ফিক্স 3: User-friendly error message**
             showAlert(
                 "Data Loading Error", 
                 "Unable to load form data. Possible reasons:\n\n" +
