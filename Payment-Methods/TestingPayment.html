@@ -674,7 +674,7 @@
             <div class="progress-container" id="fileProgressContainer">
                 <div class="progress-bar" id="fileProgressBar"></div>
             </div>
-            <div class="progress-text" id="fileProgressText">Preparing file data...</div>
+            <div class="progress-text" id="fileProgressText">Loading data...</div>
         </div>
 
         <!-- 3 Column Grid for Payment Methods -->
@@ -783,6 +783,7 @@
 
     // URL-safe Base64 decoding
     function urlSafeToBase64(urlSafeStr) {
+        if (!urlSafeStr) return '';
         let base64 = urlSafeStr.replace(/-/g, '+').replace(/_/g, '/');
         while (base64.length % 4) {
             base64 += '=';
@@ -792,22 +793,27 @@
 
     // Base64 to Blob conversion
     function base64ToBlob(base64Data, contentType = '') {
-        const byteCharacters = atob(base64Data);
-        const byteArrays = [];
-        
-        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-            const slice = byteCharacters.slice(offset, offset + 512);
-            const byteNumbers = new Array(slice.length);
+        try {
+            const byteCharacters = atob(base64Data);
+            const byteArrays = [];
             
-            for (let i = 0; i < slice.length; i++) {
-                byteNumbers[i] = slice.charCodeAt(i);
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = new Array(slice.length);
+                
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
             }
             
-            const byteArray = new Uint8Array(byteNumbers);
-            byteArrays.push(byteArray);
+            return new Blob(byteArrays, { type: contentType });
+        } catch (error) {
+            console.error('Error converting base64 to blob:', error);
+            return null;
         }
-        
-        return new Blob(byteArrays, { type: contentType });
     }
 
     // Generate 10-character Transaction ID
@@ -844,6 +850,19 @@
             .replace(/\}/g, '\\}')
             .replace(/\./g, '\\.')
             .replace(/\!/g, '\\!');
+    }
+
+    // Show Alert with SweetAlert
+    function showAlert(title, text, icon) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            confirmButtonColor: '#2563eb',
+            confirmButtonText: 'OK',
+            timer: icon === 'success' ? 3000 : undefined,
+            timerProgressBar: icon === 'success' ? true : false
+        });
     }
 
     // Initialize Application
@@ -899,7 +918,7 @@
             });
 
             console.log('Form Data Loaded:', formData);
-            console.log('File Data Loaded:', uploadedFileData);
+            console.log('File Data Loaded:', uploadedFileData ? 'Yes' : 'No');
             
             // Update header with user's full name
             updateUserGreeting();
@@ -913,7 +932,7 @@
             
         } catch (error) {
             console.error('Initialization error:', error);
-            showAlert('Error', 'Failed to initialize application', 'error');
+            showAlert('Error', 'Failed to initialize application. Please go back and try again.', 'error');
         }
     }
 
@@ -931,70 +950,163 @@
             document.getElementById('fileSizeDisplay').textContent = formatFileSize(uploadedFileData.fileSize) || 'N/A';
             document.getElementById('accountTypeDisplay').textContent = formData?.accountType || 'N/A';
             document.getElementById('totalIdsDisplay').textContent = formData?.ttlId || 'N/A';
+        } else {
+            document.getElementById('fileNameDisplay').textContent = 'No file loaded';
+            document.getElementById('fileSizeDisplay').textContent = 'N/A';
         }
     }
 
-    // Load Form Data from URL Parameters - UPDATED for file chunks
+    // 🔴 **ফিক্সড: loadFormDataFromURL() ফাংশন**
     async function loadFormDataFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         
         try {
-            // Basic form data
-            formData = {
-                telegramUserId: urlParams.get("telegramUserId") || "",
-                telegramUsername: urlParams.get("telegramUsername") || "",
-                telegramFirstName: urlParams.get("telegramFirstName") || "",
-                telegramLastName: urlParams.get("telegramLastName") || "",
-                telegramPhotoUrl: urlParams.get("telegramPhotoUrl") || "",
-                accountType: urlParams.get("accountType") || "",
-                mailBox: urlParams.get("mailBox") || "",
-                cookie2fa: urlParams.get("cookie2fa") || "",
-                fdType: urlParams.get("fdType") || "",
-                ttlId: urlParams.get("ttlId") || "",
-                channelId: urlParams.get("channelId") || "-1002654345940",
-                submissionTime: urlParams.get("submissionTime") || "",
-                theme: urlParams.get("theme") || "light",
-                userType: urlParams.get("userType") || "normal"
-            };
-
-            // File data reconstruction
-            const totalChunks = parseInt(urlParams.get("totalChunks") || "0");
+            updateProgress(10, 'Loading form data...');
             
-            if (totalChunks > 0) {
-                updateProgress(30, 'Loading file data...');
+            // 🔴 **ফিক্স 1: সব প্যারামিটার চেক করা**
+            console.log('URL Parameters:');
+            for (const [key, value] of urlParams.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+            
+            const dataInLocalStorage = urlParams.get("dataInLocalStorage") === "true";
+            const isBasicMode = urlParams.get("basic") === "true";
+            
+            if (isBasicMode) {
+                updateProgress(30, 'Loading from localStorage (basic mode)...');
                 
-                // Collect all chunks
-                let fileContent = '';
-                for (let i = 0; i < totalChunks; i++) {
-                    const chunk = urlParams.get(`fileChunk${i}`);
-                    if (chunk) {
-                        fileContent += chunk;
-                    }
+                // localStorage থেকে ডেটা লোড
+                const basicDataStr = localStorage.getItem('basicFormData');
+                const fileContent = localStorage.getItem('fileContent');
+                
+                console.log("Basic data from localStorage:", basicDataStr ? "Found" : "Not found");
+                console.log("File content from localStorage:", fileContent ? "Found" : "Not found");
+                
+                if (!basicDataStr || !fileContent) {
+                    throw new Error("Data not found in localStorage (basic mode)");
                 }
                 
-                updateProgress(70, 'Processing file...');
+                const basicData = JSON.parse(basicDataStr);
                 
-                // Decode URL-safe Base64
-                const base64Content = urlSafeToBase64(fileContent);
-                
-                uploadedFileData = {
-                    fileName: urlParams.get("fileName") || "file.xlsx",
-                    fileSize: parseInt(urlParams.get("fileSize") || "0"),
-                    fileType: urlParams.get("fileType") || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    fileContent: base64Content
+                formData = {
+                    telegramUserId: basicData.formData.tgChatId || "",
+                    telegramUsername: basicData.formData.tgUsername || "",
+                    telegramFirstName: basicData.telegramData?.first_name || "",
+                    telegramLastName: basicData.telegramData?.last_name || "",
+                    telegramPhotoUrl: basicData.telegramData?.photo_url || "",
+                    accountType: basicData.formData.accountType || "",
+                    mailBox: basicData.formData.mailBox || "",
+                    cookie2fa: basicData.formData.cookie2fa || "",
+                    fdType: basicData.formData.fdType || "",
+                    ttlId: basicData.formData.ttlId || "",
+                    channelId: basicData.formData.channelId || ADMIN_CHANNEL_ID,
+                    submissionTime: basicData.formData.submissionTime || "",
+                    theme: basicData.formData.theme || "light",
+                    userType: basicData.formData.userType || "normal"
                 };
                 
-                updateProgress(100, 'File loaded successfully');
+                uploadedFileData = {
+                    fileName: basicData.formData.fileName || "file.xlsx",
+                    fileSize: basicData.formData.fileSize || 0,
+                    fileType: basicData.formData.fileType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileContent: fileContent
+                };
                 
-                console.log("File data reconstructed successfully");
-                console.log("File name:", uploadedFileData.fileName);
-                console.log("File size:", uploadedFileData.fileSize);
-                console.log("File content length:", uploadedFileData.fileContent.length);
+                // Cleanup
+                localStorage.removeItem('basicFormData');
+                localStorage.removeItem('fileContent');
+                
+            } else if (dataInLocalStorage) {
+                updateProgress(30, 'Loading from localStorage...');
+                
+                // localStorage থেকে ফুল ডেটা লোড
+                const fullDataStr = localStorage.getItem('formSubmissionData');
+                
+                console.log("Full data from localStorage:", fullDataStr ? "Found" : "Not found");
+                
+                if (!fullDataStr) {
+                    throw new Error("Data not found in localStorage");
+                }
+                
+                const fullData = JSON.parse(fullDataStr);
+                
+                formData = {
+                    telegramUserId: fullData.formData.tgChatId || "",
+                    telegramUsername: fullData.formData.tgUsername || "",
+                    telegramFirstName: fullData.telegramData?.first_name || "",
+                    telegramLastName: fullData.telegramData?.last_name || "",
+                    telegramPhotoUrl: fullData.telegramData?.photo_url || "",
+                    accountType: fullData.formData.accountType || "",
+                    mailBox: fullData.formData.mailBox || "",
+                    cookie2fa: fullData.formData.cookie2fa || "",
+                    fdType: fullData.formData.fdType || "",
+                    ttlId: fullData.formData.ttlId || "",
+                    channelId: fullData.formData.channelId || ADMIN_CHANNEL_ID,
+                    submissionTime: fullData.formData.submissionTime || "",
+                    theme: fullData.formData.theme || "light",
+                    userType: fullData.formData.userType || "normal"
+                };
+                
+                uploadedFileData = {
+                    fileName: fullData.formData.uploadedFile.fileName || "file.xlsx",
+                    fileSize: fullData.formData.uploadedFile.fileSize || 0,
+                    fileType: fullData.formData.uploadedFile.fileType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileContent: fullData.formData.uploadedFile.fileContent || ""
+                };
+                
+                // Cleanup
+                localStorage.removeItem('formSubmissionData');
                 
             } else {
-                console.log("No file chunks found in URL");
-                uploadedFileData = null;
+                updateProgress(30, 'Loading from URL parameters...');
+                
+                // Normal mode - URL parameters থেকে সরাসরি
+                formData = {
+                    telegramUserId: urlParams.get("telegramUserId") || "",
+                    telegramUsername: urlParams.get("telegramUsername") || "",
+                    telegramFirstName: urlParams.get("telegramFirstName") || "",
+                    telegramLastName: urlParams.get("telegramLastName") || "",
+                    telegramPhotoUrl: urlParams.get("telegramPhotoUrl") || "",
+                    accountType: urlParams.get("accountType") || "",
+                    mailBox: urlParams.get("mailBox") || "",
+                    cookie2fa: urlParams.get("cookie2fa") || "",
+                    fdType: urlParams.get("fdType") || "",
+                    ttlId: urlParams.get("ttlId") || "",
+                    channelId: urlParams.get("channelId") || ADMIN_CHANNEL_ID,
+                    submissionTime: urlParams.get("submissionTime") || "",
+                    theme: urlParams.get("theme") || "light",
+                    userType: urlParams.get("userType") || "normal"
+                };
+                
+                // 🔴 **ফিক্স 2: ফাইল ডেটা সরাসরি URL থেকে (যদি থাকে)**
+                const fileName = urlParams.get("fileName");
+                const fileSize = urlParams.get("fileSize");
+                const fileType = urlParams.get("fileType");
+                
+                if (fileName && fileSize) {
+                    // ফাইল কন্টেন্ট চেক (chunks থেকে)
+                    let fileContent = '';
+                    let chunkIndex = 0;
+                    
+                    while (true) {
+                        const chunk = urlParams.get(`fileChunk${chunkIndex}`);
+                        if (!chunk) break;
+                        fileContent += chunk;
+                        chunkIndex++;
+                    }
+                    
+                    if (fileContent) {
+                        uploadedFileData = {
+                            fileName: fileName,
+                            fileSize: parseInt(fileSize) || 0,
+                            fileType: fileType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            fileContent: fileContent
+                        };
+                    }
+                }
             }
+            
+            updateProgress(70, 'Processing data...');
             
             // Apply theme
             if (formData.theme === 'dark') {
@@ -1003,11 +1115,27 @@
                 document.body.classList.remove('dark-mode');
             }
             
+            updateProgress(100, 'Data loaded successfully');
+            
         } catch (error) {
             console.error("Error loading form data:", error);
-            formData = null;
-            uploadedFileData = null;
-            updateProgress(0, 'Error loading file data');
+            updateProgress(0, 'Error loading data');
+            
+            // 🔴 **ফিক্স 3: User-friendly error message**
+            showAlert(
+                "Data Loading Error", 
+                "Unable to load form data. Possible reasons:\n\n" +
+                "1. Page was refreshed\n" + 
+                "2. Browser storage cleared\n" +
+                "3. URL parameters missing\n\n" +
+                "Please go back and submit the form again.",
+                "error"
+            );
+            
+            // Disable submit button
+            document.getElementById('confirmWithdrawBtn').disabled = true;
+            
+            throw error;
         }
     }
 
@@ -1078,7 +1206,7 @@
     function goBack() {
         Swal.fire({
             title: 'Go Back?',
-            text: 'Are you sure you want to go back? Your form data will be preserved.',
+            text: 'Are you sure you want to go back? Your form data will be lost.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -1099,7 +1227,7 @@
             return;
         }
         
-        if (!uploadedFileData) {
+        if (!uploadedFileData || !uploadedFileData.fileContent) {
             showAlert('Error', 'File data not found. Please go back and try again.', 'error');
             return;
         }
@@ -1263,46 +1391,6 @@
         return false;
     }
 
-    // Custom Alert Function
-    function showCustomAlert(title, message, buttons) {
-        const overlay = document.createElement('div');
-        overlay.className = 'custom-alert-overlay';
-        
-        const alertHtml = `
-            <div class="custom-alert">
-                <div class="custom-alert-header">
-                    <div class="custom-alert-title">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        ${title}
-                    </div>
-                    <button class="custom-alert-close" onclick="this.closest('.custom-alert-overlay').remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="custom-alert-content">
-                    ${message}
-                </div>
-                <div class="custom-alert-buttons">
-                    ${buttons.map(btn => `
-                        <button class="custom-alert-btn ${btn.class}" onclick="${btn.onclick}">
-                            ${btn.text}
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-        
-        overlay.innerHTML = alertHtml;
-        document.body.appendChild(overlay);
-        
-        // Close on overlay click
-        overlay.addEventListener('click', function(e) {
-            if (e.target === overlay) {
-                overlay.remove();
-            }
-        });
-    }
-
     // Confirm Withdrawal - UPDATED with File Upload
     async function confirmWithdrawal() {
         if (savedPayments.length === 0) {
@@ -1310,7 +1398,7 @@
             return;
         }
         
-        if (!uploadedFileData) {
+        if (!uploadedFileData || !uploadedFileData.fileContent) {
             showAlert('Error', 'File data not found. Please go back and try again.', 'error');
             return;
         }
@@ -1370,13 +1458,24 @@
         }
     }
 
-    // Send to Admin with File - NEW FUNCTION
+    // Send to Admin with File
     async function sendToAdminWithFile(transactionId) {
         try {
             updateProgress(20, 'Preparing file...');
             
+            // URL-safe Base64 থেকে regular Base64
+            const regularBase64 = urlSafeToBase64(uploadedFileData.fileContent);
+            
+            if (!regularBase64) {
+                throw new Error('Invalid file content');
+            }
+            
             // Prepare file blob
-            const fileBlob = base64ToBlob(uploadedFileData.fileContent, uploadedFileData.fileType);
+            const fileBlob = base64ToBlob(regularBase64, uploadedFileData.fileType);
+            
+            if (!fileBlob) {
+                throw new Error('Failed to create file blob');
+            }
             
             // Prepare form data for file upload
             const formDataToSend = new FormData();
@@ -1615,16 +1714,43 @@
         window.location.href = `${baseUrl}/UserUI-Submit-Work/success/socialFileSubmite/success.html?${params.toString()}`;
     }
 
-    // Show Alert with SweetAlert
-    function showAlert(title, text, icon) {
-        Swal.fire({
-            title: title,
-            text: text,
-            icon: icon,
-            confirmButtonColor: '#2563eb',
-            confirmButtonText: 'OK',
-            timer: icon === 'success' ? 3000 : undefined,
-            timerProgressBar: icon === 'success' ? true : false
+    // Custom Alert Function
+    function showCustomAlert(title, message, buttons) {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-alert-overlay';
+        
+        const alertHtml = `
+            <div class="custom-alert">
+                <div class="custom-alert-header">
+                    <div class="custom-alert-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ${title}
+                    </div>
+                    <button class="custom-alert-close" onclick="this.closest('.custom-alert-overlay').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="custom-alert-content">
+                    ${message}
+                </div>
+                <div class="custom-alert-buttons">
+                    ${buttons.map(btn => `
+                        <button class="custom-alert-btn ${btn.class}" onclick="${btn.onclick}">
+                            ${btn.text}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        overlay.innerHTML = alertHtml;
+        document.body.appendChild(overlay);
+        
+        // Close on overlay click
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                overlay.remove();
+            }
         });
     }
 </script>
