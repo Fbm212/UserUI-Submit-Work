@@ -1477,22 +1477,23 @@
                 `• ${p.method}: ${p.number}`
             ).join('\n');
             
-            const caption = `🆕 NEW FORM SUBMISSION\n\n` +
-                          `👤 User Information:\n` +
-                          `• Name: ${userData.firstName} ${userData.lastName}\n` +
-                          `• Username: @${userData.username}\n` +
-                          `• User ID: ${userData.chatId}\n\n` +
-                          `📋 Form Details:\n` +
-                          `• Account Type: ${formData.accountType}\n` +
+            const caption = `🆕 New Work Submission\n\n` +
+                          `👤 Worker Info :\n` +
+                          `• Worker: ${userData.firstName} ${userData.lastName}\n` +
+                          `• Wname: @${userData.username}\n` +
+                          `• WID: ${userData.chatId}\n\n` +
+                          `📋 Work Details:\n` +
+                          `• Acc Type: ${formData.accountType}\n` +
                           `• Mail Type: ${formData.mailBox}\n` +
                           `• 2FA/Cookie: ${formData.cookie2fa}\n` +
                           `• Friends: ${formData.fdType}\n` +
-                          `• Total IDs: ${formData.ttlId}\n` +
-                          `• File: ${uploadedFileData.fileName}\n` +
-                          `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
-                          `💳 Payment Methods:\n${paymentMethodsText}\n\n` +
-                          `⏰ Submission Time: ${formData.submissionTime}\n` +
-                          `🔢 Transaction ID: ${transactionId}`;
+                          `• Ttl IDs: ${formData.ttlId}\n\n` +
+                    //    `• File: ${uploadedFileData.fileName}\n\n` +
+                    //    `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
+                          `💳 Pay Methods:\n${paymentMethodsText}\n\n` +
+                          `🔢 Traking ID: ${transactionId}` +
+                          `⏰ Sbm Time: ${formData.submissionTime}\n`;
+                   //     `🔢 Traking ID: ${transactionId}`;
             
             formDataToSend.append('caption', caption);
             formDataToSend.append('parse_mode', 'HTML');
@@ -1536,22 +1537,23 @@
             `• ${p.method}: ${p.number}`
         ).join('\n');
         
-        const message = `🆕 NEW FORM SUBMISSION\n\n` +
-                      `👤 User Information:\n` +
-                      `• Name: ${userData.firstName} ${userData.lastName}\n` +
-                      `• Username: @${userData.username}\n` +
-                      `• User ID: ${userData.chatId}\n\n` +
-                      `📋 Form Details:\n` +
-                      `• Account Type: ${formData.accountType}\n` +
-                      `• Mail Type: ${formData.mailBox}\n` +
-                      `• 2FA/Cookie: ${formData.cookie2fa}\n` +
-                      `• Friends: ${formData.fdType}\n` +
-                      `• Total IDs: ${formData.ttlId}\n` +
-                      `• File: ${uploadedFileData.fileName}\n` +
-                      `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
-                      `💳 Payment Methods:\n${paymentMethodsText}\n\n` +
-                      `⏰ Submission Time: ${formData.submissionTime}\n` +
-                      `🔢 Transaction ID: ${transactionId}`;
+        const message = `🆕 New Work Submission\n\n` +
+                          `👤 Worker Info :\n` +
+                          `• Worker: ${userData.firstName} ${userData.lastName}\n` +
+                          `• Wname: @${userData.username}\n` +
+                          `• WID: ${userData.chatId}\n\n` +
+                          `📋 Work Details:\n` +
+                          `• Acc Type: ${formData.accountType}\n` +
+                          `• Mail Type: ${formData.mailBox}\n` +
+                          `• 2FA/Cookie: ${formData.cookie2fa}\n` +
+                          `• Friends: ${formData.fdType}\n` +
+                          `• Ttl IDs: ${formData.ttlId}\n\n` +
+                    //    `• File: ${uploadedFileData.fileName}\n\n` +
+                    //    `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
+                          `💳 Pay Methods:\n${paymentMethodsText}\n\n` +
+                          `🔢 Traking ID: ${transactionId}` +
+                          `⏰ Sbm Time: ${formData.submissionTime}\n`;
+                   //     `🔢 Traking ID: ${transactionId}`;
         
         const payload = {
             chat_id: formData.channelId || ADMIN_CHANNEL_ID,
@@ -1580,13 +1582,13 @@
             
             const imageUrl = "https://i.ibb.co/t5Q3JBF/Submite-Scc.jpg";
             const captionText = `✅ *Submission Successful\\!*\n\n` +
-                               `*Form Type:* ${escapeMarkdownV2(formData.accountType)}\n` +
+                               `*Work Type:* ${escapeMarkdownV2(formData.accountType)}\n` +
                                `*Total IDs:* ${escapeMarkdownV2(formData.ttlId)}\n` +
-                               `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
+                           //  `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
                                `*Payment Details:*\n${paymentMethodsText}\n\n` +
                                `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
                                `*Time:* ${escapeMarkdownV2(formData.submissionTime)}\n\n` +
-                               `We will process your request within 24 hours\\.`;
+                               `We will process your request within 7-12 hours\\.`;
             
             const inlineKeyboard = {
                 inline_keyboard: [
