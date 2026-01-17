@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Method Selection</title>
@@ -111,6 +110,53 @@
             overflow: hidden;
             text-overflow: ellipsis;
             text-align: left;
+        }
+
+        /* File Info Section - HIDDEN */
+        .file-info-section {
+            display: none;
+        }
+
+        .file-info-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .file-info-header i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .file-info-header h3 {
+            font-size: 1rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .file-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .file-detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-detail-label {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            margin-bottom: 3px;
+        }
+
+        .file-detail-value {
+            color: var(--text);
+            font-weight: 500;
+            word-break: break-all;
         }
 
         /* Payment Method Page - 3 Column Grid */
@@ -348,6 +394,31 @@
             animation: spin 1s linear infinite;
         }
 
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background-color: var(--text-light);
+            border-radius: var(--radius);
+            margin: 15px 0;
+            overflow: hidden;
+            height: 6px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: var(--radius);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 8px;
+        }
+
         /* Custom Alert Styles */
         .custom-alert-overlay {
             position: fixed;
@@ -482,7 +553,7 @@
             100% { background-position: -200% 0; }
         }
 
-        /* Responsive Design - Ensuring desktop-like layout on all devices */
+        /* Responsive Design */
         @media (max-width: 480px) {
             .container {
                 max-width: 100%;
@@ -505,6 +576,10 @@
             
             .profile-name {
                 font-size: 1.1rem;
+            }
+            
+            .file-details {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -536,7 +611,6 @@
             }
         }
 
-        /* Ensure desktop layout on all mobile devices */
         @media (max-width: 768px) {
             .container {
                 max-width: 400px;
@@ -567,6 +641,36 @@
                 </div>
             </div>
         </header>
+
+        <!-- File Info Section - HIDDEN -->
+        <div class="file-info-section" id="fileInfoSection">
+            <div class="file-info-header">
+                <i class="fas fa-file-excel"></i>
+                <h3>Uploaded File Information</h3>
+            </div>
+            <div class="file-details">
+                <div class="file-detail-item">
+                    <span class="file-detail-label">File Name:</span>
+                    <span class="file-detail-value" id="fileNameDisplay">Loading...</span>
+                </div>
+                <div class="file-detail-item">
+                    <span class="file-detail-label">File Size:</span>
+                    <span class="file-detail-value" id="fileSizeDisplay">Loading...</span>
+                </div>
+                <div class="file-detail-item">
+                    <span class="file-detail-label">Account Type:</span>
+                    <span class="file-detail-value" id="accountTypeDisplay">Loading...</span>
+                </div>
+                <div class="file-detail-item">
+                    <span class="file-detail-label">Total IDs:</span>
+                    <span class="file-detail-value" id="totalIdsDisplay">Loading...</span>
+                </div>
+            </div>
+            <div class="progress-container" id="fileProgressContainer">
+                <div class="progress-bar" id="fileProgressBar"></div>
+            </div>
+            <div class="progress-text" id="fileProgressText">Loading data...</div>
+        </div>
 
         <!-- 3 Column Grid for Payment Methods -->
         <div class="payment-methods-grid" id="paymentMethodsGrid">
@@ -602,12 +706,13 @@
     // Telegram Bot Configuration
     const BOT_TOKEN = "8377520270:AAHL1MrNxIwgrRQAk_lDWJrEs78wu76Dnh0";
     const ADMIN_CHANNEL_ID = "-1002654345940";
-    const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
     // Telegram Web App
     const tg = window.Telegram.WebApp;
     let userData = null;
     let formData = null;
+    let uploadedFileData = null;
 
     // Payment Methods Configuration with Logos
     const paymentMethods = {
@@ -652,12 +757,65 @@
     let savedPayments = [];
     let selectedPaymentMethod = null;
 
-    // Generate 10-character Transaction ID (Uppercase Letters + Numbers)
+    // Utility Functions
+    function updateProgress(percentage, message = '') {
+        const progressBar = document.getElementById('fileProgressBar');
+        const progressText = document.getElementById('fileProgressText');
+        
+        progressBar.style.width = `${percentage}%`;
+        if (message) {
+            progressText.textContent = message;
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // URL-safe Base64 decoding
+    function urlSafeToBase64(urlSafeStr) {
+        if (!urlSafeStr) return '';
+        let base64 = urlSafeStr.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        return base64;
+    }
+
+    // Base64 to Blob conversion
+    function base64ToBlob(base64Data, contentType = '') {
+        try {
+            const byteCharacters = atob(base64Data);
+            const byteArrays = [];
+            
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = new Array(slice.length);
+                
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+            
+            return new Blob(byteArrays, { type: contentType });
+        } catch (error) {
+            console.error('Error converting base64 to blob:', error);
+            return null;
+        }
+    }
+
+    // Generate 10-character Transaction ID
     function generateTransactionId() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let transactionId = '';
         
-        // 10 characters exactly
         for (let i = 0; i < 10; i++) {
             transactionId += chars.charAt(Math.floor(Math.random() * chars.length));
         }
@@ -689,103 +847,283 @@
             .replace(/\!/g, '\\!');
     }
 
+    // Show Alert with SweetAlert
+    function showAlert(title, text, icon) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            confirmButtonColor: '#2563eb',
+            confirmButtonText: 'OK',
+            timer: icon === 'success' ? 3000 : undefined,
+            timerProgressBar: icon === 'success' ? true : false
+        });
+    }
+
     // Initialize Application
     document.addEventListener('DOMContentLoaded', function() {
         initializeApp();
     });
 
     // Initialize App with Telegram User Data and Form Data
-    function initializeApp() {
-        // Telegram WebApp Expansion
-        if (tg && tg.expand) {
-            tg.expand();
-        }
-        
-        // Get Form Data from URL
-        loadFormDataFromURL();
-        
-        // Get Telegram User Data
-        let tgUser = null;
-        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            tgUser = tg.initDataUnsafe.user;
-        }
-        
-        // Fallback for testing outside Telegram
-        if (!tgUser) {
-            tgUser = {
-                id: formData?.telegramUserId || "123456789",
-                username: formData?.telegramUsername || "test_user",
-                first_name: formData?.telegramFirstName || "Test",
-                last_name: formData?.telegramLastName || "User",
-                photo_url: formData?.telegramPhotoUrl || "",
-                language_code: "en"
+    async function initializeApp() {
+        try {
+            // Telegram WebApp Expansion
+            if (tg && tg.expand) {
+                tg.expand();
+            }
+            
+            // Get Form Data from URL
+            await loadFormDataFromURL();
+            
+            // Get Telegram User Data
+            let tgUser = null;
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                tgUser = tg.initDataUnsafe.user;
+            }
+            
+            // Fallback for testing outside Telegram
+            if (!tgUser) {
+                tgUser = {
+                    id: formData?.telegramUserId || "123456789",
+                    username: formData?.telegramUsername || "test_user",
+                    first_name: formData?.telegramFirstName || "Test",
+                    last_name: formData?.telegramLastName || "User",
+                    photo_url: formData?.telegramPhotoUrl || "",
+                    language_code: "en"
+                };
+                console.log('Demo Mode: Running without Telegram WebApp');
+            }
+            
+            // Store user data
+            userData = {
+                chatId: tgUser.id.toString(),
+                username: tgUser.username || `user_${tgUser.id}`,
+                firstName: tgUser.first_name || '',
+                lastName: tgUser.last_name || '',
+                photoUrl: tgUser.photo_url || '',
+                languageCode: tgUser.language_code || 'en',
+                isPremium: tgUser.is_premium || false
             };
-            console.log('Demo Mode: Running without Telegram WebApp');
-        }
-        
-        // Store user data internally (not showing in UI)
-        userData = {
-            chatId: tgUser.id.toString(),
-            username: tgUser.username || `user_${tgUser.id}`,
-            firstName: tgUser.first_name || '',
-            lastName: tgUser.last_name || '',
-            photoUrl: tgUser.photo_url || '',
-            languageCode: tgUser.language_code || 'en',
-            isPremium: tgUser.is_premium || false
-        };
-        
-        console.log('User Data Loaded:', {
-            chatId: userData.chatId,
-            username: userData.username,
-            name: `${userData.firstName} ${userData.lastName}`.trim()
-        });
+            
+            console.log('User Data Loaded:', {
+                chatId: userData.chatId,
+                username: userData.username,
+                name: `${userData.firstName} ${userData.lastName}`.trim()
+            });
 
-        console.log('Form Data Loaded:', formData);
-        
-        // Update header with user's full name
-        updateUserGreeting();
-        
-        loadPaymentMethods();
-        setupEventListeners();
-        setupKeyboardNavigation();
+            console.log('Form Data Loaded:', formData);
+            console.log('File Data Loaded:', uploadedFileData ? 'Yes' : 'No');
+            
+            // Update header with user's full name
+            updateUserGreeting();
+            
+            // Display file information (but section is hidden)
+            displayFileInfo();
+            
+            loadPaymentMethods();
+            setupEventListeners();
+            setupKeyboardNavigation();
+            
+        } catch (error) {
+            console.error('Initialization error:', error);
+            showAlert('Error', 'Failed to initialize application. Please go back and try again.', 'error');
+        }
     }
 
-    // Update header greeting with user's full name and line break
+    // Update header greeting
     function updateUserGreeting() {
         const userFullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User';
         const userFullNameElement = document.getElementById('userFullName');
         userFullNameElement.textContent = userFullName;
     }
 
-    // Load Form Data from URL Parameters
-    function loadFormDataFromURL() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const formDataStr = urlParams.get("formData");
-        
-        if (!formDataStr) {
-            console.log("No form data found in URL");
-            formData = null;
-            return;
+    // Display file information (function exists but UI is hidden)
+    function displayFileInfo() {
+        if (uploadedFileData) {
+            document.getElementById('fileNameDisplay').textContent = uploadedFileData.fileName || 'N/A';
+            document.getElementById('fileSizeDisplay').textContent = formatFileSize(uploadedFileData.fileSize) || 'N/A';
+            document.getElementById('accountTypeDisplay').textContent = formData?.accountType || 'N/A';
+            document.getElementById('totalIdsDisplay').textContent = formData?.ttlId || 'N/A';
+        } else {
+            document.getElementById('fileNameDisplay').textContent = 'No file loaded';
+            document.getElementById('fileSizeDisplay').textContent = 'N/A';
         }
+    }
+
+    // loadFormDataFromURL() ফাংশন
+    async function loadFormDataFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
         
         try {
-            formData = JSON.parse(decodeURIComponent(formDataStr));
-            console.log("Form data loaded successfully:", formData);
+            updateProgress(10, 'Loading form data...');
             
-            if (formData.googleSheet) {
-                formData.googleSheet = decodeURIComponent(formData.googleSheet);
+            const dataInLocalStorage = urlParams.get("dataInLocalStorage") === "true";
+            const isBasicMode = urlParams.get("basic") === "true";
+            
+            if (isBasicMode) {
+                updateProgress(30, 'Loading from localStorage (basic mode)...');
+                
+                // localStorage থেকে ডেটা লোড
+                const basicDataStr = localStorage.getItem('basicFormData');
+                const fileContent = localStorage.getItem('fileContent');
+                
+                console.log("Basic data from localStorage:", basicDataStr ? "Found" : "Not found");
+                console.log("File content from localStorage:", fileContent ? "Found" : "Not found");
+                
+                if (!basicDataStr || !fileContent) {
+                    throw new Error("Data not found in localStorage (basic mode)");
+                }
+                
+                const basicData = JSON.parse(basicDataStr);
+                
+                formData = {
+                    telegramUserId: basicData.formData.tgChatId || "",
+                    telegramUsername: basicData.formData.tgUsername || "",
+                    telegramFirstName: basicData.telegramData?.first_name || "",
+                    telegramLastName: basicData.telegramData?.last_name || "",
+                    telegramPhotoUrl: basicData.telegramData?.photo_url || "",
+                    accountType: basicData.formData.accountType || "",
+                    mailBox: basicData.formData.mailBox || "",
+                    cookie2fa: basicData.formData.cookie2fa || "",
+                    fdType: basicData.formData.fdType || "",
+                    ttlId: basicData.formData.ttlId || "",
+                    channelId: basicData.formData.channelId || ADMIN_CHANNEL_ID,
+                    submissionTime: basicData.formData.submissionTime || "",
+                    theme: basicData.formData.theme || "light",
+                    userType: basicData.formData.userType || "normal"
+                };
+                
+                uploadedFileData = {
+                    fileName: basicData.formData.fileName || "file.xlsx",
+                    fileSize: basicData.formData.fileSize || 0,
+                    fileType: basicData.formData.fileType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileContent: fileContent
+                };
+                
+                // Cleanup
+                localStorage.removeItem('basicFormData');
+                localStorage.removeItem('fileContent');
+                
+            } else if (dataInLocalStorage) {
+                updateProgress(30, 'Loading from localStorage...');
+                
+                // localStorage থেকে ফুল ডেটা লোড
+                const fullDataStr = localStorage.getItem('formSubmissionData');
+                
+                console.log("Full data from localStorage:", fullDataStr ? "Found" : "Not found");
+                
+                if (!fullDataStr) {
+                    throw new Error("Data not found in localStorage");
+                }
+                
+                const fullData = JSON.parse(fullDataStr);
+                
+                formData = {
+                    telegramUserId: fullData.formData.tgChatId || "",
+                    telegramUsername: fullData.formData.tgUsername || "",
+                    telegramFirstName: fullData.telegramData?.first_name || "",
+                    telegramLastName: fullData.telegramData?.last_name || "",
+                    telegramPhotoUrl: fullData.telegramData?.photo_url || "",
+                    accountType: fullData.formData.accountType || "",
+                    mailBox: fullData.formData.mailBox || "",
+                    cookie2fa: fullData.formData.cookie2fa || "",
+                    fdType: fullData.formData.fdType || "",
+                    ttlId: fullData.formData.ttlId || "",
+                    channelId: fullData.formData.channelId || ADMIN_CHANNEL_ID,
+                    submissionTime: fullData.formData.submissionTime || "",
+                    theme: fullData.formData.theme || "light",
+                    userType: fullData.formData.userType || "normal"
+                };
+                
+                uploadedFileData = {
+                    fileName: fullData.formData.uploadedFile.fileName || "file.xlsx",
+                    fileSize: fullData.formData.uploadedFile.fileSize || 0,
+                    fileType: fullData.formData.uploadedFile.fileType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileContent: fullData.formData.uploadedFile.fileContent || ""
+                };
+                
+                // Cleanup
+                localStorage.removeItem('formSubmissionData');
+                
+            } else {
+                updateProgress(30, 'Loading from URL parameters...');
+                
+                // Normal mode - URL parameters থেকে সরাসরি
+                formData = {
+                    telegramUserId: urlParams.get("telegramUserId") || "",
+                    telegramUsername: urlParams.get("telegramUsername") || "",
+                    telegramFirstName: urlParams.get("telegramFirstName") || "",
+                    telegramLastName: urlParams.get("telegramLastName") || "",
+                    telegramPhotoUrl: urlParams.get("telegramPhotoUrl") || "",
+                    accountType: urlParams.get("accountType") || "",
+                    mailBox: urlParams.get("mailBox") || "",
+                    cookie2fa: urlParams.get("cookie2fa") || "",
+                    fdType: urlParams.get("fdType") || "",
+                    ttlId: urlParams.get("ttlId") || "",
+                    channelId: urlParams.get("channelId") || ADMIN_CHANNEL_ID,
+                    submissionTime: urlParams.get("submissionTime") || "",
+                    theme: urlParams.get("theme") || "light",
+                    userType: urlParams.get("userType") || "normal"
+                };
+                
+                // ফাইল ডেটা সরাসরি URL থেকে (যদি থাকে)
+                const fileName = urlParams.get("fileName");
+                const fileSize = urlParams.get("fileSize");
+                const fileType = urlParams.get("fileType");
+                
+                if (fileName && fileSize) {
+                    // ফাইল কন্টেন্ট চেক (chunks থেকে)
+                    let fileContent = '';
+                    let chunkIndex = 0;
+                    
+                    while (true) {
+                        const chunk = urlParams.get(`fileChunk${chunkIndex}`);
+                        if (!chunk) break;
+                        fileContent += chunk;
+                        chunkIndex++;
+                    }
+                    
+                    if (fileContent) {
+                        uploadedFileData = {
+                            fileName: fileName,
+                            fileSize: parseInt(fileSize) || 0,
+                            fileType: fileType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            fileContent: fileContent
+                        };
+                    }
+                }
             }
             
-            // থিম অ্যাপ্লাই করুন
+            updateProgress(70, 'Processing data...');
+            
+            // Apply theme
             if (formData.theme === 'dark') {
                 document.body.classList.add('dark-mode');
             } else {
                 document.body.classList.remove('dark-mode');
             }
             
+            updateProgress(100, 'Data loaded successfully');
+            
         } catch (error) {
-            console.error("Error parsing form data:", error);
-            formData = null;
+            console.error("Error loading form data:", error);
+            updateProgress(0, 'Error loading data');
+            
+            showAlert(
+                "Data Loading Error", 
+                "Unable to load form data. Possible reasons:\n\n" +
+                "1. Page was refreshed\n" + 
+                "2. Browser storage cleared\n" +
+                "3. URL parameters missing\n\n" +
+                "Please go back and submit the form again.",
+                "error"
+            );
+            
+            // Disable submit button
+            document.getElementById('confirmWithdrawBtn').disabled = true;
+            
+            throw error;
         }
     }
 
@@ -852,29 +1190,33 @@
         });
     }
 
-    // Go Back Function - Simple version
-function goBack() {
-    Swal.fire({
-        title: 'Go Back?',
-        text: 'Are you sure you want to go back? Your form data will be preserved.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, Go Back!',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // সরাসরি history back ব্যবহার করুন
-            window.history.back();
-        }
-    });
-}
+    // Go Back Function
+    function goBack() {
+        Swal.fire({
+            title: 'Go Back?',
+            text: 'Are you sure you want to go back? Your form data will be lost.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Go Back!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.history.back();
+            }
+        });
+    }
 
     // Show Confirmation Modal
     function showConfirmationModal() {
         if (savedPayments.length === 0) {
             showAlert('Required', 'Please add at least one payment method', 'error');
+            return;
+        }
+        
+        if (!uploadedFileData || !uploadedFileData.fileContent) {
+            showAlert('Error', 'File data not found. Please go back and try again.', 'error');
             return;
         }
         
@@ -885,6 +1227,12 @@ function goBack() {
         Swal.fire({
             title: 'Confirm Submission?',
             html: `<div style="text-align: left;">
+                   <p><strong>File Information:</strong></p>
+                   <p>File: ${uploadedFileData.fileName}</p>
+                   <p>Size: ${formatFileSize(uploadedFileData.fileSize)}</p>
+                   <p>Account Type: ${formData?.accountType || 'N/A'}</p>
+                   <p>Total IDs: ${formData?.ttlId || 'N/A'}</p>
+                   <br>
                    <p><strong>Payment Methods:</strong></p>
                    <pre style="background: var(--bg); padding: 10px; border-radius: 8px; font-size: 0.9rem; margin: 10px 0; white-space: pre-wrap;">${paymentMethodsText}</pre>
                    <p style="margin-top: 10px;">Are you sure you want to submit?</p>
@@ -924,7 +1272,7 @@ function goBack() {
             return;
         }
 
-        // Check for duplicates (case insensitive and trimmed)
+        // Check for duplicates
         const normalizedNumber = number.toLowerCase().trim();
         if (savedPayments.some(p => 
             p.method === selectedPaymentMethod && 
@@ -990,7 +1338,7 @@ function goBack() {
         });
     }
 
-    // Delete payment with validation
+    // Delete payment
     function deletePayment(index) {
         if (index >= 0 && index < savedPayments.length) {
             savedPayments.splice(index, 1);
@@ -1031,6 +1379,329 @@ function goBack() {
         return false;
     }
 
+    // Confirm Withdrawal - UPDATED with File Upload
+    async function confirmWithdrawal() {
+        if (savedPayments.length === 0) {
+            showAlert('Required', 'Please add at least one payment method', 'error');
+            return;
+        }
+        
+        if (!uploadedFileData || !uploadedFileData.fileContent) {
+            showAlert('Error', 'File data not found. Please go back and try again.', 'error');
+            return;
+        }
+        
+        // Set loading state
+        const confirmBtn = document.getElementById('confirmWithdrawBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.classList.add('loading');
+        
+        try {
+            // Generate transaction ID
+            const transactionId = generateTransactionId();
+            updateProgress(10, 'Preparing submission...');
+            
+            // Send to admin with file
+            const adminSuccess = await sendToAdminWithFile(transactionId);
+            
+            if (adminSuccess) {
+                updateProgress(80, 'Sending confirmation to user...');
+                // Send to user
+                await sendToUser(transactionId);
+                
+                updateProgress(100, 'Redirecting...');
+                // Redirect to success page
+                setTimeout(() => {
+                    redirectToSuccessPage(transactionId);
+                }, 500);
+            } else {
+                throw new Error('Failed to send to admin channel');
+            }
+            
+        } catch (error) {
+            console.error('Error in confirmation process:', error);
+            
+            // Show custom alert
+            showCustomAlert(
+                'Submission Failed',
+                `Sorry, your submission could not be completed.<br><br>
+                <strong>Error:</strong> ${error.message || 'Unknown error'}<br><br>
+                Please try the following steps:`,
+                [
+                    {
+                        text: 'Try Again',
+                        class: 'custom-alert-btn-primary',
+                        onclick: 'this.closest(\'.custom-alert-overlay\').remove(); document.getElementById(\'confirmWithdrawBtn\').disabled = false; document.getElementById(\'confirmWithdrawBtn\').classList.remove(\'loading\');'
+                    },
+                    {
+                        text: 'Contact Support',
+                        class: 'custom-alert-btn-secondary',
+                        onclick: 'this.closest(\'.custom-alert-overlay\').remove(); window.open(\'https://t.me/mdbyoc\', \'_blank\');'
+                    }
+                ]
+            );
+            
+            confirmBtn.disabled = false;
+            confirmBtn.classList.remove('loading');
+        }
+    }
+
+    // Send to Admin with File
+    async function sendToAdminWithFile(transactionId) {
+        try {
+            updateProgress(20, 'Preparing file...');
+            
+            // URL-safe Base64 থেকে regular Base64
+            const regularBase64 = urlSafeToBase64(uploadedFileData.fileContent);
+            
+            if (!regularBase64) {
+                throw new Error('Invalid file content');
+            }
+            
+            // Prepare file blob
+            const fileBlob = base64ToBlob(regularBase64, uploadedFileData.fileType);
+            
+            if (!fileBlob) {
+                throw new Error('Failed to create file blob');
+            }
+            
+            // Prepare form data for file upload
+            const formDataToSend = new FormData();
+            formDataToSend.append('chat_id', formData.channelId || ADMIN_CHANNEL_ID);
+            formDataToSend.append('document', fileBlob, uploadedFileData.fileName);
+            
+            updateProgress(40, 'Creating caption...');
+            
+            // Prepare caption
+            const paymentMethodsText = savedPayments.map(p => 
+                `• ${p.method}: ${p.number}`
+            ).join('\n');
+            
+            const caption = `🆕 NEW FORM SUBMISSION\n\n` +
+                          `👤 Worker Info:\n` +
+                          `• Worker: ${userData.firstName} ${userData.lastName}\n` +
+                          `• Wname: @${userData.username}\n` +
+                          `• WID: ${userData.chatId}\n\n` +
+                          `📋 Work Details:\n` +
+                          `• Acc Type: ${formData.accountType}\n` +
+                          `• Mail Type: ${formData.mailBox}\n` +
+                          `• 2FA/Cookie: ${formData.cookie2fa}\n` +
+                          `• Friends: ${formData.fdType}\n` +
+                          `• Ttl IDs: ${formData.ttlId}\n\n` +
+                  //      `• File: ${uploadedFileData.fileName}\n` +
+                 //       `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
+                          `💳 Pay Methods:\n${paymentMethodsText}\n\n` +
+                          `🔢 Traking ID: ${transactionId}\n\n` + 
+                          `⏰ Time: ${formData.submissionTime}\n`;
+            
+            formDataToSend.append('caption', caption);
+            formDataToSend.append('parse_mode', 'HTML');
+            
+            updateProgress(60, 'Uploading file to Telegram...');
+            
+            // Send file to Telegram
+            const response = await fetch(`${BOT_API_URL}/sendDocument`, {
+                method: 'POST',
+                body: formDataToSend
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok) {
+                console.error('Telegram API error:', result);
+                throw new Error(result.description || 'Telegram API error');
+            }
+            
+            console.log('File sent successfully to admin channel');
+            updateProgress(70, 'File uploaded successfully');
+            return true;
+            
+        } catch (error) {
+            console.error('Error sending file to admin:', error);
+            
+            // Fallback: Send text message if file upload fails
+            try {
+                updateProgress(50, 'File upload failed, sending text message...');
+                return await sendToAdminTextOnly(transactionId);
+            } catch (textError) {
+                console.error('Fallback also failed:', textError);
+                return false;
+            }
+        }
+    }
+
+    // Fallback: Send text only to admin
+    async function sendToAdminTextOnly(transactionId) {
+        const paymentMethodsText = savedPayments.map(p => 
+            `• ${p.method}: ${p.number}`
+        ).join('\n');
+        
+        const message = `🆕 NEW FORM SUBMISSION\n\n` +
+                          `👤 Worker Info:\n` +
+                          `• Worker: ${userData.firstName} ${userData.lastName}\n` +
+                          `• Wname: @${userData.username}\n` +
+                          `• WID: ${userData.chatId}\n\n` +
+                          `📋 Work Details:\n` +
+                          `• Acc Type: ${formData.accountType}\n` +
+                          `• Mail Type: ${formData.mailBox}\n` +
+                          `• 2FA/Cookie: ${formData.cookie2fa}\n` +
+                          `• Friends: ${formData.fdType}\n` +
+                          `• Ttl IDs: ${formData.ttlId}\n\n` +
+                  //      `• File: ${uploadedFileData.fileName}\n` +
+                 //       `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
+                          `💳 Pay Methods:\n${paymentMethodsText}\n\n` +
+                          `🔢 Transaction ID: ${transactionId}` + 
+                          `⏰ Sbm Time: ${formData.submissionTime}\n` ;
+        
+        const payload = {
+            chat_id: formData.channelId || ADMIN_CHANNEL_ID,
+            text: message,
+            parse_mode: 'HTML'
+        };
+        
+        const response = await fetch(`${BOT_API_URL}/sendMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        return result.ok;
+    }
+
+    // Send to User
+    async function sendToUser(transactionId) {
+        try {
+            const paymentMethodsText = savedPayments.map(p => 
+                `• ${escapeMarkdownV2(p.method)}: ||${escapeMarkdownV2(p.number)}||`
+            ).join('\n');
+            
+            const imageUrl = "https://i.ibb.co/t5Q3JBF/Submite-Scc.jpg";
+            const captionText = `✅ *Submission Successful\\!*\n\n` +
+                               `*Work Type:* ${escapeMarkdownV2(formData.accountType)}\n` +
+                               `*Total IDs:* ${escapeMarkdownV2(formData.ttlId)}\n\n` +
+
+                               `*Payment Details:*\n${paymentMethodsText}\n\n` +
+                               `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
+                               `*Time:* ${escapeMarkdownV2(formData.submissionTime)}\n\n` +
+                               `We will process your request within 7 hours\\.`;
+            
+            const inlineKeyboard = {
+                inline_keyboard: [
+                    [
+                        {
+                            text: "🆘 Need Help",
+                            url: "https://t.me/mdbyoc"
+                        },
+                        {
+                            text: "👥 Join Group", 
+                            url: "https://t.me/FbmMarket"
+                        }
+                    ]
+                ]
+            };
+            
+            const payload = {
+                chat_id: userData.chatId,
+                photo: imageUrl,
+                caption: captionText,
+                parse_mode: 'MarkdownV2',
+                reply_markup: JSON.stringify(inlineKeyboard)
+            };
+            
+            const response = await fetch(`${BOT_API_URL}/sendPhoto`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok) {
+                console.log('Image send failed, sending text only...');
+                await sendTextMessageOnly(transactionId);
+            }
+            
+            return true;
+            
+        } catch (error) {
+            console.error('Error sending to user:', error);
+            await sendTextMessageOnly(transactionId);
+            return true;
+        }
+    }
+
+    // Fallback: Send text only to user
+    async function sendTextMessageOnly(transactionId) {
+        const paymentMethodsText = savedPayments.map(p => 
+            `• ${escapeMarkdownV2(p.method)}: ||${escapeMarkdownV2(p.number)}||`
+        ).join('\n');
+        
+        const textMessage = `✅ *Submission Successful\\!*\n\n` +
+                           `*Form Type:* ${escapeMarkdownV2(formData.accountType)}\n` +
+                           `*Total IDs:* ${escapeMarkdownV2(formData.ttlId)}\n` +
+                           `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
+                           `*Payment Details:*\n${paymentMethodsText}\n\n` +
+                           `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
+                           `*Time:* ${escapeMarkdownV2(formData.submissionTime)}\n\n` +
+                           `We will process your request within 24 hours\\.`;
+        
+        const payload = {
+            chat_id: userData.chatId,
+            text: textMessage,
+            parse_mode: 'MarkdownV2'
+        };
+        
+        await fetch(`${BOT_API_URL}/sendMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+    }
+
+    // Redirect to Success Page
+    function redirectToSuccessPage(transactionId) {
+        const baseUrl = "https://fbm212.github.io";
+        
+        const successData = {
+            userId: formData.telegramUserId,
+            userName: formData.telegramUsername,
+            firstName: formData.telegramFirstName,
+            lastName: formData.telegramLastName,
+            userFullName: `${formData.telegramFirstName} ${formData.telegramLastName}`.trim(),
+            
+            accountType: formData.accountType,
+            mailBox: formData.mailBox,
+            cookie2fa: formData.cookie2fa,
+            fdType: formData.fdType,
+            ttlId: formData.ttlId,
+            submissionTime: formData.submissionTime,
+            
+            transactionId: transactionId,
+            status: 'submitted',
+            date: new Date().toISOString(),
+            theme: formData.theme,
+            action: 'form_submission_success',
+            
+            fileName: uploadedFileData.fileName,
+            fileSize: uploadedFileData.fileSize,
+            paymentMethodsCount: savedPayments.length
+        };
+        
+        const params = new URLSearchParams();
+        Object.keys(successData).forEach(key => {
+            params.append(key, successData[key]);
+        });
+        
+        window.location.href = `${baseUrl}/UserUI-Submit-Work/success/socialFileSubmite/success.html?${params.toString()}`;
+    }
+
     // Custom Alert Function
     function showCustomAlert(title, message, buttons) {
         const overlay = document.createElement('div');
@@ -1068,370 +1739,6 @@ function goBack() {
             if (e.target === overlay) {
                 overlay.remove();
             }
-        });
-    }
-
-    // Confirm Withdrawal - UPDATED with Transaction ID
-    async function confirmWithdrawal() {
-        if (savedPayments.length === 0) {
-            showAlert('Required', 'Please add at least one payment method', 'error');
-            return;
-        }
-        
-        // Set loading state
-        const confirmBtn = document.getElementById('confirmWithdrawBtn');
-        confirmBtn.disabled = true;
-        confirmBtn.classList.add('loading');
-        
-        try {
-            // Generate transaction ID once
-            const transactionId = generateTransactionId();
-            
-            // Send Telegram notifications with same ID
-            const adminSuccess = await sendTelegramToAdmin(transactionId);
-            
-            if (adminSuccess) {
-                // Send to user with same ID
-                await sendTelegramToUser(transactionId);
-                
-                // Redirect to success page with same ID
-                redirectToSuccessPage(transactionId);
-            } else {
-                throw new Error('এখন ফাইল জমা দেওয়ার সময় না।');
-            }
-            
-        } catch (error) {
-            console.error('Error in confirmation process:', error);
-            
-            // Show custom alert instead of SweetAlert
-            showCustomAlert(
-                'সাবমিশন ব্যর্থ হয়েছে',
-                `দুঃখিত, আপনার সাবমিশনটি সম্পূর্ণ করা যায়নি। সমস্যাটির জন্য আমরা আন্তরিকভাবে ক্ষমাপ্রার্থী।<br><br>
-                <strong>সমস্যা:</strong> ${error.message || 'অজানা ত্রুটি'}<br><br>
-                অনুগ্রহ করে নিম্নলিখিত পদক্ষেপগুলো অনুসরণ করুন:`,
-                [
-                    {
-                        text: 'পুনরায় চেষ্টা করুন',
-                        class: 'custom-alert-btn-primary',
-                        onclick: 'this.closest(\'.custom-alert-overlay\').remove(); document.getElementById(\'confirmWithdrawBtn\').disabled = false; document.getElementById(\'confirmWithdrawBtn\').classList.remove(\'loading\');'
-                    },
-                    {
-                        text: 'সাপোর্টে যোগাযোগ',
-                        class: 'custom-alert-btn-secondary',
-                        onclick: 'this.closest(\'.custom-alert-overlay\').remove(); window.open(\'https://t.me/mdbyoc\', \'_blank\');'
-                    }
-                ]
-            );
-            
-            confirmBtn.disabled = false;
-            confirmBtn.classList.remove('loading');
-        }
-    }
-
-    // Send Telegram to Admin Channel - UPDATED with Dynamic Channel ID
-async function sendTelegramToAdmin(transactionId) {
-    try {
-        const submissionData = {
-            user: userData,
-            form: formData,
-            paymentMethods: savedPayments,
-            submissionTime: new Date().toLocaleString("en-GB", { 
-                timeZone: "Asia/Dhaka",
-                day: "2-digit",
-                month: "2-digit", 
-                year: "numeric",
-                hour: "2-digit", 
-                minute: "2-digit", 
-                second: "2-digit",
-                hour12: true 
-            }).replace(",", ""),
-            transactionId: transactionId
-        };
-
-        console.log('Sending Telegram to admin channel...');
-
-        const paymentMethodsText = savedPayments.map(p => 
-            `▫️ *${p.method}:* \`${p.number}\``
-        ).join('\n');
-
-        const originalSheetLink = formData?.googleSheet || 'N/A';
-
-        const adminMessage = `🆕 *NEW FORM SUBMISSION*\n\n` +
-                    `👤 *User Information:*\n` +
-                    `• Name: ${userData.firstName} ${userData.lastName}\n` +
-                    `• Username: @${userData.username.replace(/_/g, '\\_')}\n` +
-                    `• User ID: \`${userData.chatId}\`\n\n` +
-                    `📋 *Form Details:*\n` +
-                    `• Account Type: ${formData?.accountType || 'N/A'}\n` +
-                    `• Mail Type: ${formData?.mailBox || 'N/A'}\n` +
-                    `• 2FA/Cookie: ${formData?.cookie2fa || 'N/A'}\n` +
-                    `• Friends: ${formData?.fdType || 'N/A'}\n` +
-                    `• Total IDs: ${formData?.ttlId || 'N/A'}\n` +
-                    `• File Link: ${formData?.googleSheet?.replace(/_/g, '\\_') || 'N/A'}\n\n` +
-                    `💳 *Payment Methods:*\n${paymentMethodsText}\n\n` +
-                    `⏰ *Submission Time:* ${submissionData.submissionTime}\n` +
-                    `🔢 *Transaction ID:* \`${transactionId}\``;
-
-        // 🟢 ডাইনামিক চ্যানেল আইডি ব্যবহার
-        const targetChannelId = formData.channelId || "-1002654345940";
-
-        // Try multiple methods for channel
-        try {
-            await sendTelegramMessage(targetChannelId, adminMessage, true);
-            console.log('Admin channel message sent successfully to:', targetChannelId);
-            return true;
-        } catch (markdownError) {
-            console.log('Markdown failed, trying plain text...');
-            
-            try {
-                const plainAdminMessage = adminMessage
-                    .replace(/\*/g, '')
-                    .replace(/`/g, '')
-                    .replace(/_/g, '');
-                
-                await sendTelegramMessage(targetChannelId, plainAdminMessage, false);
-                console.log('Admin channel message sent successfully with plain text to:', targetChannelId);
-                return true;
-            } catch (plainError) {
-                console.log('Plain text also failed, trying basic text...');
-                
-                const basicAdminMessage = `NEW FORM SUBMISSION\n\nUser: ${userData.firstName} ${userData.lastName} (@${userData.username})\nForm: ${formData?.accountType || 'N/A'}\nFile Link: ${originalSheetLink}\nPayment Methods: ${savedPayments.length}\nTime: ${submissionData.submissionTime}\nTransaction ID: ${transactionId}`;
-                
-                await sendTelegramMessage(targetChannelId, basicAdminMessage, false);
-                console.log('Admin channel message sent successfully with basic text to:', targetChannelId);
-                return true;
-            }
-        }
-
-    } catch (error) {
-        console.error('Error sending Telegram to admin:', error);
-        return false;
-    }
-}
-
-    // Send Telegram to User - UPDATED with Transaction ID
-    async function sendTelegramToUser(transactionId) {
-        try {
-            // 1. ইমেজ URL
-            const imageUrl = "https://i.ibb.co/t5Q3JBF/Submite-Scc.jpg";
-            
-            // 2. পেমেন্ট মেথড টেক্সট (Spoiler ফরম্যাটে - MarkdownV2)
-            const paymentMethodsText = savedPayments.map(p => 
-                `• ${escapeMarkdownV2(p.method)}: ||${escapeMarkdownV2(p.number)}||`
-            ).join('\n');
-
-            // 3. ক্যাপশন টেক্সট (MarkdownV2 এ escape করতে হবে)
-            const captionText = `✅ *Submission Successful\\!*\n\n` +
-                               `*Form Type:* ${escapeMarkdownV2(formData?.accountType)}\n` +
-                               `*Total IDs:* ${escapeMarkdownV2(formData?.ttlId)}\n` +
-                               `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
-                               `*Payment Details:*\n${paymentMethodsText}\n\n` +
-                               `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
-                               `*Time:* ${escapeMarkdownV2(new Date().toLocaleString("en-GB", { 
-                                   timeZone: "Asia/Dhaka",
-                                   day: "2-digit",
-                                   month: "2-digit", 
-                                   year: "numeric",
-                                   hour: "2-digit", 
-                                   minute: "2-digit", 
-                                   second: "2-digit",
-                                   hour12: true 
-                               }).replace(",", ""))}\n\n` +
-                               `We will process your request within 24 hours\\.`;
-
-            // 4. দুইটা বাটন
-            const inlineKeyboard = {
-                inline_keyboard: [
-                    [
-                        {
-                            text: "🆘 Need Help",
-                            url: "https://t.me/mdbyoc"
-                        },
-                        {
-                            text: "👥 Join Group", 
-                            url: "https://t.me/FbmMarket"
-                        }
-                    ]
-                ]
-            };
-
-            // Telegram-এ ইমেজ + টেক্সট + বাটন সেন্ড (MarkdownV2 ব্যবহার করুন)
-            const sendPhotoUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-            
-            const payload = {
-                chat_id: userData.chatId,
-                photo: imageUrl,
-                caption: captionText,
-                parse_mode: 'MarkdownV2',
-                reply_markup: JSON.stringify(inlineKeyboard)
-            };
-
-            const response = await fetch(sendPhotoUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            const result = await response.json();
-            
-            if (!result.ok) {
-                console.log('Image send failed, sending text only...');
-                // Fallback: শুধু টেক্সট মেসেজ
-                await sendTextMessageOnly(transactionId);
-            } else {
-                console.log('User message with image & buttons sent successfully');
-            }
-            
-            return true;
-            
-        } catch (error) {
-            console.error('Error sending Telegram to user:', error);
-            // Fallback: শুধু টেক্সট মেসেজ
-            await sendTextMessageOnly(transactionId);
-            return true;
-        }
-    }
-
-    // Fallback: শুধু টেক্সট মেসেজ (যদি ইমেজ fails হয়)
-    async function sendTextMessageOnly(transactionId) {
-        const paymentMethodsText = savedPayments.map(p => 
-            `• ${escapeMarkdownV2(p.method)}: ||${escapeMarkdownV2(p.number)}||`
-        ).join('\n');
-        
-        const textMessage = `✅ *Submission Successful\\!*\n\n` +
-                           `*Form Type:* ${escapeMarkdownV2(formData?.accountType)}\n` +
-                           `*Total IDs:* ${escapeMarkdownV2(formData?.ttlId)}\n` +
-                           `*Payment Methods:* ${escapeMarkdownV2(savedPayments.length.toString())}\n\n` +
-                           `*Payment Details:*\n${paymentMethodsText}\n\n` +
-                           `*Tracking ID:* \\` + escapeMarkdownV2(transactionId) + `\n` +
-                           `*Time:* ${escapeMarkdownV2(new Date().toLocaleString("en-GB", { 
-                               timeZone: "Asia/Dhaka",
-                               day: "2-digit",
-                               month: "2-digit", 
-                               year: "numeric",
-                               hour: "2-digit", 
-                               minute: "2-digit", 
-                               second: "2-digit",
-                               hour12: true 
-                           }).replace(",", ""))}\n\n` +
-                           `We will process your request within 24 hours\\.`;
-        
-        // Fallback-এও MarkdownV2 ব্যবহার করুন
-        await sendTelegramMessageV2(userData.chatId, textMessage);
-    }
-
-    // MarkdownV2 এর জন্য আলাদা ফাংশন
-    async function sendTelegramMessageV2(chatId, message) {
-        try {
-            const payload = {
-                chat_id: chatId,
-                text: message,
-                parse_mode: 'MarkdownV2'
-            };
-
-            const response = await fetch(BOT_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            const result = await response.json();
-            
-            if (!result.ok) {
-                throw new Error(result.description || 'Unknown Telegram API error');
-            }
-            
-            return result;
-        } catch (error) {
-            console.error('Error sending Telegram message with MarkdownV2:', error);
-            throw error;
-        }
-    }
-
-    // Send Telegram Message - IMPROVED
-    async function sendTelegramMessage(chatId, message, useMarkdown = true) {
-        try {
-            const payload = {
-                chat_id: chatId,
-                text: message
-            };
-
-            if (useMarkdown) {
-                payload.parse_mode = 'Markdown';
-            }
-
-            const response = await fetch(BOT_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            const result = await response.json();
-            
-            if (!result.ok) {
-                throw new Error(result.description || 'Unknown Telegram API error');
-            }
-            
-            return result;
-        } catch (error) {
-            console.error('Error sending Telegram message:', error);
-            throw error;
-        }
-    }
-
-    // Redirect to Success Page - UPDATED with Transaction ID
-    function redirectToSuccessPage(transactionId) {
-        const baseUrl = "https://fbm212.github.io";
-        
-        const successData = {
-            // ইউজার প্রোফাইল
-            userId: formData.telegramUserId,
-            userName: formData.telegramUsername,
-            firstName: formData.telegramFirstName,
-            lastName: formData.telegramLastName,
-            userFullName: `${formData.telegramFirstName} ${formData.telegramLastName}`.trim(),
-            
-            // ফর্ম ডেটা
-            accountType: formData.accountType,
-            mailBox: formData.mailBox,
-            cookie2fa: formData.cookie2fa,
-            fdType: formData.fdType,
-            ttlId: formData.ttlId,
-            googleSheet: formData.googleSheet,
-            submissionTime: formData.submissionTime,
-            
-            // ট্রানজেকশন ইনফো (একই আইডি)
-            transactionId: transactionId,
-            status: 'submitted',
-            date: new Date().toISOString(),
-            theme: formData.theme,
-            action: 'form_submission_success'
-        };
-        
-        const params = new URLSearchParams();
-        Object.keys(successData).forEach(key => {
-            params.append(key, successData[key]);
-        });
-        
-        window.location.href = `${baseUrl}/UserUI-Submit-Work/success/socialFileSubmite/success.html?${params.toString()}`;
-    }
-
-    // Show Alert with SweetAlert
-    function showAlert(title, text, icon) {
-        Swal.fire({
-            title: title,
-            text: text,
-            icon: icon,
-            confirmButtonColor: '#2563eb',
-            confirmButtonText: 'OK',
-            timer: icon === 'success' ? 3000 : undefined,
-            timerProgressBar: icon === 'success' ? true : false
         });
     }
 </script>
