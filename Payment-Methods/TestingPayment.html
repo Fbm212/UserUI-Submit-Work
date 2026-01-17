@@ -1478,21 +1478,21 @@
             ).join('\n');
             
             const caption = `🆕 NEW FORM SUBMISSION\n\n` +
-                          `👤 User Information:\n` +
-                          `• Name: ${userData.firstName} ${userData.lastName}\n` +
-                          `• Username: @${userData.username}\n` +
-                          `• User ID: ${userData.chatId}\n\n` +
-                          `📋 Form Details:\n` +
-                          `• Account Type: ${formData.accountType}\n` +
+                          `👤 Worker Info:\n` +
+                          `• Worker: ${userData.firstName} ${userData.lastName}\n` +
+                          `• Wname: @${userData.username}\n` +
+                          `• WID: ${userData.chatId}\n\n` +
+                          `📋 Work Details:\n` +
+                          `• Acc Type: ${formData.accountType}\n` +
                           `• Mail Type: ${formData.mailBox}\n` +
                           `• 2FA/Cookie: ${formData.cookie2fa}\n` +
                           `• Friends: ${formData.fdType}\n` +
-                          `• Total IDs: ${formData.ttlId}\n` +
-                          `• File: ${uploadedFileData.fileName}\n` +
-                          `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
-                          `💳 Payment Methods:\n${paymentMethodsText}\n\n` +
-                          `⏰ Submission Time: ${formData.submissionTime}\n` +
-                          `🔢 Transaction ID: ${transactionId}`;
+                          `• Ttl IDs: ${formData.ttlId}\n\n` +
+                  //      `• File: ${uploadedFileData.fileName}\n` +
+                 //       `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
+                          `💳 Pay Methods:\n${paymentMethodsText}\n\n` +
+                          `🔢 Transaction ID: ${transactionId}` + 
+                          `⏰ Sbm Time: ${formData.submissionTime}\n`;
             
             formDataToSend.append('caption', caption);
             formDataToSend.append('parse_mode', 'HTML');
@@ -1537,21 +1537,21 @@
         ).join('\n');
         
         const message = `🆕 NEW FORM SUBMISSION\n\n` +
-                      `👤 Worker Info:\n` +
-                      `• Worker: ${userData.firstName} ${userData.lastName}\n` +
-                      `• Wname: @${userData.username}\n` +
-                      `• WID: ${userData.chatId}\n\n` +
-                      `📋 Work Details:\n` +
-                      `• Acc Type: ${formData.accountType}\n` +
-                      `• Mail Type: ${formData.mailBox}\n` +
-                      `• 2FA/Cookie: ${formData.cookie2fa}\n` +
-                      `• Friends: ${formData.fdType}\n` +
-                      `• Ttl IDs: ${formData.ttlId}\n\n` +
-                 //   `• File: ${uploadedFileData.fileName}\n` +
-                 //   `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
-                      `💳 Pay Methods:\n${paymentMethodsText}\n\n` +
-                      `🔢 Traking ID: ${transactionId}\n` +
-                      `⏰ Sbm Time: ${formData.submissionTime}\n` ;
+                          `👤 Worker Info:\n` +
+                          `• Worker: ${userData.firstName} ${userData.lastName}\n` +
+                          `• Wname: @${userData.username}\n` +
+                          `• WID: ${userData.chatId}\n\n` +
+                          `📋 Work Details:\n` +
+                          `• Acc Type: ${formData.accountType}\n` +
+                          `• Mail Type: ${formData.mailBox}\n` +
+                          `• 2FA/Cookie: ${formData.cookie2fa}\n` +
+                          `• Friends: ${formData.fdType}\n` +
+                          `• Ttl IDs: ${formData.ttlId}\n\n` +
+                  //      `• File: ${uploadedFileData.fileName}\n` +
+                 //       `• File Size: ${formatFileSize(uploadedFileData.fileSize)}\n\n` +
+                          `💳 Pay Methods:\n${paymentMethodsText}\n\n` +
+                          `🔢 Transaction ID: ${transactionId}` + 
+                          `⏰ Sbm Time: ${formData.submissionTime}\n` ;
         
         const payload = {
             chat_id: formData.channelId || ADMIN_CHANNEL_ID,
