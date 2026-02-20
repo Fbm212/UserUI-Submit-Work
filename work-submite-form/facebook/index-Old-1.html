@@ -637,7 +637,7 @@ async function loadSpecialUserIds() {
 
 // 7. চ্যানেল ম্যাপিং
 const NORMAL_CHANNELS = {
-        "Normal Facebook": "-1002654345940",
+        "Normal File": "-1002654345940",
         "Number 2Fa File": "-1002281630040",
         "rPc 1k Friends File": "-1002459414820",
         "Trusted Mail File": "-1003170929442",
@@ -766,7 +766,7 @@ document.getElementById("continue-btn").addEventListener("click", async function
         // ফর্ম ডেটা সংগ্রহ
         const accountType = document.getElementById("account-type").value; 
         const mailBox = document.getElementById("mail-box").value || " "; 
-        const cookie2fa = document.getElementById("2fa-cookie").value.trim();
+        const cookie2fa = document.getElementById("2fa-cookie").value;
         const fdType = document.getElementById("fd-type").value || " "; 
         const ttlId = document.getElementById("ttl-id").value; 
         const tgUsername = document.getElementById("tg-username").value.trim();
@@ -797,12 +797,21 @@ document.getElementById("continue-btn").addEventListener("click", async function
         ];
 
         for (const field of requiredFields) {
-            if (!field.value || field.value === "Select") {
+            if (!field.value || field.value === "--Select--" || field.value === "Select") {
                 showAlert(`Please fill out the ${field.name}.`);
                 resetButton(continueBtn, originalText);
                 updateProgress(0, '');
                 return;
             }
+        }
+        
+        // 2FA/Cookies ভ্যালিডেশন - সব অপশন অনুমোদন করুন
+        const validCookieOptions = ["2FA", "Cookies", "2fa-Cook"];
+        if (!validCookieOptions.includes(cookie2fa)) {
+            showAlert("Please select a valid 2FA/Cookies option.");
+            resetButton(continueBtn, originalText);
+            updateProgress(0, '');
+            return;
         }
         
         updateProgress(30, 'Checking file...');
@@ -815,7 +824,7 @@ document.getElementById("continue-btn").addEventListener("click", async function
             return;
         }
         
-        // 🔴 **ফিক্স: ফাইল সাইজ চেক 2MB** (I/O Error ফিক্স)
+        // ফাইল সাইজ চেক 2MB
         if (uploadedFile.size > 2 * 1024 * 1024) {
             showAlert("File size must be less than 2MB for processing.");
             resetButton(continueBtn, originalText);
@@ -832,13 +841,6 @@ document.getElementById("continue-btn").addEventListener("click", async function
 
         if (!/^\d{9,10}$/.test(tgChatId)) {
             showAlert("Telegram Chat Id must be 9 or 10 digits.");
-            resetButton(continueBtn, originalText);
-            updateProgress(0, '');
-            return;
-        }
-
-        if (cookie2fa !== "2FA" && cookie2fa !== "Cookies") {
-            showAlert("Please select 2FA or Cookies correctly.");
             resetButton(continueBtn, originalText);
             updateProgress(0, '');
             return;
@@ -921,17 +923,14 @@ document.getElementById("continue-btn").addEventListener("click", async function
         
         updateProgress(90, 'Finalizing...');
         
-        // 🔴 **ফিক্স: ডেটা localStorage এ সেভ এবং শুধু রেফারেন্স URL-এ পাঠানো**
-        
-        // 1. প্রথমে localStorage এ সব ডেটা সেভ করব
+        // localStorage এ ডেটা সেভ
         try {
             localStorage.setItem('formSubmissionData', JSON.stringify(formSubmissionData));
             console.log("ডেটা localStorage এ সেভ করা হয়েছে");
             
-            // 2. শুধু রেফারেন্স ডেটা URL-এ পাঠাব (Base64 ডেটা নয়)
+            // শুধু রেফারেন্স ডেটা URL-এ পাঠাব
             const params = new URLSearchParams();
             
-            // শুধু রেফারেন্স ডেটা
             params.append('telegramUserId', tgChatId);
             params.append('telegramUsername', tgUsername.replace('@', ''));
             params.append('telegramFirstName', window.telegramData?.first_name || '');
@@ -948,15 +947,11 @@ document.getElementById("continue-btn").addEventListener("click", async function
             params.append('theme', formSubmissionData.formData.theme);
             params.append('userType', formSubmissionData.formData.userType);
             
-            // ফাইল মেটাডাটা (কন্টেন্ট নয়)
             params.append('fileName', fileData.fileName);
             params.append('fileSize', fileData.fileSize);
             params.append('fileType', fileData.fileType);
-            
-            // ফ্ল্যাগ যে localStorage এ ডেটা আছে
             params.append('dataInLocalStorage', 'true');
             
-            // পেমেন্ট পেজে রিডাইরেক্ট
             const paymentPageUrl = "https://fbm212.github.io/UserUI-Submit-Work/Payment-Methods/socialFileSubmitePayment.html";
             
             updateProgress(100, 'Redirecting...');
@@ -968,10 +963,8 @@ document.getElementById("continue-btn").addEventListener("click", async function
         } catch (storageError) {
             console.error("localStorage error:", storageError);
             
-            // 🔴 **ফিক্স: localStorage ফুল হলে শুধু ছোট ডেটা পাঠানো**
             showAlert("System busy, please wait...");
             
-            // ছোট ডেটা localStorage এ
             const basicData = {
                 telegramData: window.telegramData,
                 formData: {
@@ -992,11 +985,8 @@ document.getElementById("continue-btn").addEventListener("click", async function
             };
             
             localStorage.setItem('basicFormData', JSON.stringify(basicData));
-            
-            // Base64 ডেটা আলাদা key-এ সেভ
             localStorage.setItem('fileContent', base64Content);
             
-            // রিডাইরেক্ট
             const paymentPageUrl = "https://fbm212.github.io/UserUI-Submit-Work/Payment-Methods/TestingPayment.html";
             window.location.href = `${paymentPageUrl}?basic=true`;
         }
